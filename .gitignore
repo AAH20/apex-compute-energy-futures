@@ -26,3 +26,9 @@ env/
 venv/
 ENV/
 .DS_Store
+
+# Private & Confidential Investor Decks & Scripts
+docs/presentation/
+scripts/generate_nvidia_inception_presentation.py
+*.pdf
+private/
