@@ -192,9 +192,9 @@ flowchart TD
     EXO["Exogenous Node Failure (mu_0)"] --> ARRIVAL["Preemption Event t_i"]
     ARRIVAL -->|"Jump +alpha"| INTENSITY["Conditional Intensity lambda(t)"]
     INTENSITY -->|"Decay e^(-beta * dt)"| CLUSTER["Clustered Preemption Cascade"]
-    CLUSTER -->|"Branching Ratio eta = alpha / beta"| STABILITY{"eta < 1.0?"}
-    STABILITY -->|"Yes"| SUB["Subcritical: Finite Cascade"]
-    STABILITY -->|"No (eta >= 1.0)"| EXP["Supercritical: Cluster Melt / Blackout"]
+    CLUSTER -->|"Branching Ratio eta = alpha / beta"| STABILITY{"Is eta subcritical?"}
+    STABILITY -->|"Yes (eta &lt; 1.0)"| SUB["Subcritical: Finite Cascade"]
+    STABILITY -->|"No (eta &ge; 1.0)"| EXP["Supercritical: Cluster Melt / Blackout"]
 ```
 
 ### 3.2 Branching Ratio and Spectral Stability Proof
@@ -566,7 +566,229 @@ This delivers a deterministic sub-15 nanosecond enqueue/dequeue throughput capab
 
 ---
 
-## 8. Quantitative Alpha Invariant Audit & Verification Checklist
+## 8. Hidden Markov Model (HMM) Regime Detection & Adaptive Kalman Filtering
+
+### 8.1 Multi-Regime Macro-Meso Dynamics
+Compute spot markets and wholesale grid nodes undergo sudden structural state shifts rather than stationary Gaussian fluctuations. We model regime transitions via a continuous-time Hidden Markov Model (HMM) with $K = 3$ discrete latent states $S_t \in \{1, 2, 3\}$:
+
+1. **State 1 (Nominal Carry Regime):** Low electricity LMP volatility, tight forward-spot basis spread ($|X_t - \mu| \le 0.15\text{ \$/hr}$), negligible preemption probability ($\lambda_0 \le 0.05\text{ hr}^{-1}$).
+2. **State 2 (Grid Contingency / LMP Surge):** High electricity pricing ($\text{LMP} > \$1,500/\text{MWh}$), wide basis spread variance, increased probability of demand-response load shedding.
+3. **State 3 (Extreme Compute Squeeze / Crisis):** Massive spot hardware withdrawal, preemption rates exceeding $80\%$, forward-spot basis blowout ($+600\text{ bps}$), market order-book illiquidity.
+
+```mermaid
+flowchart LR
+    S1["State 1: Nominal Carry<br/>(Low Volatility, Stable Basis)"]
+    S2["State 2: Grid Contingency<br/>(LMP Surges, DVFS Shedding)"]
+    S3["State 3: Compute Squeeze<br/>(85% Preemption, Basis Blowout)"]
+
+    S1 -->|"Grid Frequency Trip df/dt"| S2
+    S2 -->|"Contingency Cleared"| S1
+    S1 -->|"Frontier Model Squeeze"| S3
+    S3 -->|"Supply Replenishment"| S1
+    S2 -->|"Cascade Load Shed"| S3
+    S3 -->|"Grid Stabilization"| S2
+```
+
+The transition probability matrix $\mathbf{A} \in \mathbb{R}^{3 \times 3}$ defines the Markovian transition dynamics:
+
+$$\mathbf{A} = \begin{pmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{pmatrix}, \quad \sum_{j=1}^3 a_{ij} = 1, \quad a_{ij} \ge 0$$
+
+Given multi-dimensional observation vector $\mathbf{y}_t = [X_t, \text{LMP}_t, f_t, \lambda_t]^\top$, emission distributions follow state-conditioned multivariate Gaussians:
+
+$$\mathbf{y}_t \mid S_t = k \sim \mathcal{N}(\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$$
+
+Forward filtering recursions compute posterior state occupancy probabilities $\pi_t(k) = \mathbb{P}(S_t = k \mid \mathbf{y}_{1:t})$ in real time without lookahead bias:
+
+$$\alpha_t(k) = \mathbb{P}(\mathbf{y}_1, \dots, \mathbf{y}_t, S_t = k) = \mathcal{N}(\mathbf{y}_t \mid \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k) \sum_{j=1}^3 \alpha_{t-1}(j) a_{jk}$$
+
+$$\pi_t(k) = \frac{\alpha_t(k)}{\sum_{m=1}^3 \alpha_t(m)}$$
+
+### 8.2 Adaptive Kalman Filtering with Mehra Innovation Covariance Scaling
+To track the continuous, unobservable equilibrium spread $\mu_t$ and reversion rate $\theta_t$ under noisy streaming L3 order book ticks, we formulate a 2-dimensional linear Gaussian state-space model:
+
+$$\mathbf{x}_t = \begin{pmatrix} \mu_t \\ \theta_t \end{pmatrix} = \mathbf{F}_t \mathbf{x}_{t-1} + \mathbf{w}_t, \quad \mathbf{w}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}_t)$$
+
+$$z_t = \mathbf{H}_t \mathbf{x}_t + v_t, \quad v_t \sim \mathcal{N}(0, R_t)$$
+
+Standard Kalman filtering suffers from lag and filter divergence during jump arrivals. We introduce an adaptive covariance scaling factor based on the normalized innovation sequence $\mathbf{e}_t = z_t - \mathbf{H}_t \hat{\mathbf{x}}_{t \mid t-1}$:
+
+$$d_t^2 = \mathbf{e}_t^\top \mathbf{S}_t^{-1} \mathbf{e}_t, \quad \mathbf{S}_t = \mathbf{H}_t \mathbf{P}_{t \mid t-1} \mathbf{H}_t^\top + R_t$$
+
+When $d_t^2 > \chi_{1, 0.99}^2 \approx 6.63$ (signaling an unmodeled structural jump), the process noise covariance is instantaneously scaled via Mehra's adaptive rule:
+
+$$\mathbf{Q}_t = \max\left( \mathbf{Q}_{\text{base}}, \gamma_{\text{scale}} \cdot \mathbf{K}_t \mathbf{e}_t \mathbf{e}_t^\top \mathbf{K}_t^\top \right)$$
+
+This allows the filter to rapidly lock onto new post-jump equilibrium states within 2 to 3 ticks.
+
+---
+
+## 9. Hamilton-Jacobi-Bellman (HJB) BESS Battery Storage Control & DVFS Co-Optimization
+
+### 9.1 Coupled Physical State Dynamics
+A gigawatt-scale datacenter equipped with behind-the-meter Battery Energy Storage Systems (BESS) and dynamic voltage-frequency scaling (DVFS) manages a high-dimensional coupled physical system:
+
+1. **Battery State of Charge (SoC):** $E_t \in [E_{\min}, E_{\max}]$, with dynamics $\dot{E}_t = -\eta_{\text{dis}} u_{\text{BESS}}^+(t) + \frac{1}{\eta_{\text{chg}}} u_{\text{BESS}}^-(t)$.
+2. **Wholesale Locational Marginal Price (LMP):** $P_t$, modeled as mean-reverting jump diffusion $dP_t = \theta_P (\mu_P - P_t) dt + \sigma_P dW_t^P + J_P dq_P$.
+3. **Compute Power Draw:** $W_t(f) = W_{\text{static}} + W_{\text{dynamic}} \cdot \left(\frac{f}{f_0}\right)^3$.
+4. **Thermal Rack Enclosure:** $C_{\text{thermal}} \frac{dT_{\text{rack}}}{dt} = W_t(f) - \frac{T_{\text{rack}} - T_{\text{coolant}}}{R_{\text{thermal}}}$.
+
+### 9.2 The Continuous Optimal Control Problem
+Let the control vector be $\mathbf{u}_t = (u_{\text{BESS}}(t), f_{\text{DVFS}}(t))^\top$. The institutional objective is to maximize expected net economic value over horizon $[0, T]$ subject to physical thermal and electrical limits:
+
+$$V(\mathbf{x}, t) = \sup_{\mathbf{u} \in \mathcal{U}} \mathbb{E}\left[ \int_t^T \left( R_{\text{ancillary}}(u_{\text{BESS}}) + R_{\text{compute}}(f) - P_s \cdot \left( W(f) - u_{\text{BESS}} \right) - \psi(T_{\text{rack}}) \right) ds + \Psi(\mathbf{x}_T) \;\middle|\; \mathbf{x}_t = \mathbf{x} \right]$$
+
+Where:
+* $R_{\text{ancillary}}(u)$ represents ERCOT/PJM Fast Frequency Response (FFR) capacity reservation payments.
+* $\psi(T) = \zeta \cdot \max(0, T - T_{\text{safe}})^2$ is the quadratic penalty for exceeding safe silicon operating temperatures.
+* $\Psi(\mathbf{x}_T)$ enforces terminal battery state-of-charge conservation.
+
+### 9.3 Hamilton-Jacobi-Bellman Partial Differential Equation
+Applying the dynamic programming principle yields the continuous HJB equation:
+
+$$-\frac{\partial V}{\partial t} = \max_{u_{\text{BESS}}, f} \left\{ \mathcal{L}[\mathbf{u}] + \frac{\partial V}{\partial E} \dot{E}(u) + \frac{\partial V}{\partial P} \theta_P(\mu_P - P) + \frac{1}{2} \sigma_P^2 \frac{\partial^2 V}{\partial P^2} + \frac{\partial V}{\partial T_{\text{rack}}} \dot{T}_{\text{rack}}(f) \right\}$$
+
+#### Optimal Control Policies:
+1. **BESS Optimal Discharge (Bang-Bang with Singular Boundary):**
+   $$u_{\text{BESS}}^* = \begin{cases} P_{\text{discharge}}^{\max} & \text{if } P + \lambda_{\text{ancillary}} > \frac{\partial V}{\partial E} \cdot \eta_{\text{dis}} \\ -P_{\text{charge}}^{\max} & \text{if } P < \frac{\partial V}{\partial E} \cdot \frac{1}{\eta_{\text{chg}}} \\ 0 & \text{otherwise} \end{cases}$$
+2. **Optimal DVFS Frequency Scaling (Stationary Point):**
+   Taking the first-order condition with respect to frequency $f$:
+   $$3 W_{\text{dynamic}} \frac{f^2}{f_0^3} \left( P + \frac{1}{C_{\text{thermal}} R_{\text{thermal}}} \frac{\partial V}{\partial T_{\text{rack}}} \right) = \frac{\partial R_{\text{compute}}}{\partial f}$$
+   Yielding explicit cubic root clock throttling during high LMP or thermal stress.
+
+---
+
+## 10. Institutional Smart Order Routing (SOR) & Cross-Venue Arbitrage Clearance
+
+### 10.1 Multi-Venue Execution Topology
+Apex aggregates fragmented spot GPU liquidity across five asynchronous venues:
+* `vast.ai` (Retail decentralized spot hosts)
+* `runpod` (Community & secure enterprise cloud)
+* `aws_spot` (Hyperscaler spot instances, 2-minute preemption notification)
+* `coreweave` (Specialized GPU cloud, Infiniband fabric)
+* `neo_cloud_private` (Private bilateral datacenter colocation)
+
+```mermaid
+flowchart TD
+    CLIENT["Institutional Leases / Forward Demand"] --> SOR["Smart Order Router (SOR)<br/>Microsecond Mixed-Integer Allocator"]
+    SOR -->|"Slippage-Minimized Leg"| VAST["vast.ai Order Book"]
+    SOR -->|"Fault-Tolerant Batch"| RUNPOD["RunPod Spot Pods"]
+    SOR -->|"Mission-Critical Tier"| COREWEAVE["CoreWeave Reserved Fleet"]
+    SOR -->|"Elastic Spillover"| AWS["AWS Spot GPU Fleets"]
+    
+    VAST --> GATE["ActionGate Fast-Path Verification"]
+    RUNPOD --> GATE
+    COREWEAVE --> GATE
+    AWS --> GATE
+    GATE --> LEDGER["Cryptographic Audit Block Anchor"]
+```
+
+### 10.2 Mixed-Integer Convex Allocation Problem
+Given aggregate forward demand for $N_{\text{total}}$ GPUs over horizon $\tau$, the Smart Order Router solves:
+
+$$\min_{\{q_v\}} \sum_{v \in \mathcal{V}} \left( q_v \cdot \bar{S}_v + \frac{1}{2} \eta_v q_v^2 + \lambda_{\text{lat}} \cdot \tau_v + \lambda_{\text{preempt}} \cdot \mathbb{P}_v(\text{preempt}) \cdot q_v \right)$$
+
+Subject to:
+1. **Quantity Completion:** $\sum_{v \in \mathcal{V}} q_v = N_{\text{total}}$
+2. **Venue Inventory Caps:** $0 \le q_v \le \text{Capacity}_v$
+3. **Latency Bound:** $\max_{v : q_v > 0} \tau_v \le \tau_{\text{SLA}}$
+4. **SLA Tier Compatibility:** $q_{\text{vast.ai}} = 0$ for $\text{SLATier.MISSION\_CRITICAL}$
+
+Using closed-form KKT water-filling, the router resolves optimal order splits across all 5 venues in $< 12\text{ }\mu\text{s}$.
+
+---
+
+## 11. Multi-Scenario Crisis & Chaos Stress Testing Engine (`stress_tester`)
+
+### 11.1 Quantitative Crisis Scenarios
+The `InstitutionalStressTestingEngine` subjects compute-energy portfolios to high-dimensional black-swan events:
+
+1. **"Winter Storm Uri 2.0" (ERCOT Grid Frequency Collapse):**
+   * Grid frequency plunges to $59.35\text{ Hz}$ (approaching $59.30\text{ Hz}$ Under-Frequency Load Shedding Stage 1).
+   * Wholesale power LMP caps at $\$9,000/\text{MWh}$ for 48 consecutive hours.
+   * ISO mandates $45\%$ mandatory datacenter power curtailment.
+2. **"Frontier Model Launch Shock" (Compute Liquidity Squeeze):**
+   * Instantaneous withdrawal of $60,000$ GPUs from secondary and spot venues by a Tier-1 AI lab.
+   * Retail preemption rate jumps to $85\%$.
+   * Forward-spot basis spread blows out $+600\text{ bps}$ ($+6.0\%/\text{hr}$).
+3. **"Subsea Terabit Partition" (Transatlantic Routing Severance):**
+   * Dual subsea fiber severance causes routing detour.
+   * Transatlantic ping latency spikes $+350\text{ ms}$; packet loss reaches $8.5\%$.
+   * Cross-venue order book arbitrage desynchronizes, generating $+450\text{ bps}$ execution slippage.
+
+### 11.2 Tail Risk Mathematical Formulations
+Under $N = 10,000$ Monte Carlo paths, terminal portfolio loss $L_i = V_0 - V_{T, i}$ is evaluated across tail quantiles.
+
+#### 1. Parametric Value at Risk ($\text{VaR}_\alpha$):
+For confidence level $\alpha = 0.999$:
+
+$$\text{VaR}_{0.999}^{\text{param}} = \mu_L + z_{0.999} \cdot \sigma_L$$
+
+Where $z_{0.999} = \Phi^{-1}(0.999) \approx 3.090232$ evaluated via rational Chebyshev / Acklam approximation.
+
+#### 2. Parametric Expected Shortfall ($\text{CVaR}_\alpha$):
+
+$$\text{CVaR}_{0.999}^{\text{param}} = \mu_L + \sigma_L \cdot \frac{\phi(z_{0.999})}{1 - 0.999}$$
+
+Where $\phi(z) = \frac{1}{\sqrt{2\pi}} e^{-z^2/2}$ is the standard normal PDF. At $\alpha = 0.999$, $\frac{\phi(3.09023)}{0.001} \approx 3.366$.
+
+#### 3. Empirical / Historical $\text{VaR}$ and $\text{CVaR}$:
+Sorting path losses $L_{(1)} \le L_{(2)} \le \dots \le L_{(N)}$:
+
+$$\text{VaR}_{0.999}^{\text{hist}} = L_{(\lfloor 0.999 \cdot N \rfloor)}$$
+
+$$\text{CVaR}_{0.999}^{\text{hist}} = \frac{1}{N - \lfloor 0.999 \cdot N \rfloor} \sum_{i = \lfloor 0.999 \cdot N \rfloor}^N L_{(i)}$$
+
+#### 4. Maximum Drawdown (MDD) and System Survival:
+$$\text{MDD}_p = \max_{0 \le t \le T} \left( \frac{\max_{0 \le s \le t} V_{s, p} - V_{t, p}}{\max_{0 \le s \le t} V_{s, p}} \right)$$
+
+$$\mathbb{P}(\text{Survival}) = \frac{1}{N} \sum_{p=1}^N \mathbf{1}_{\left\{ \min_{0 \le t \le T} V_{t, p} \ge V_{\text{reserve\_floor}} \right\}}$$
+
+---
+
+## 12. Executable Formal Settlement Prover & Append-Only Merkle Audit Ledger (`settlement_prover`)
+
+### 12.1 SMT Invariant Formulation
+The `FormalSettlementProver` translates all trade settlements, battery dispatches, and DVFS throttling actions into First-Order Logic formulas over Real Arithmetic ($\mathbb{R}$):
+
+```mermaid
+flowchart TD
+    TX["Proposed Settlement / Actuation Action"] --> SMT["Pure-Python SMT Linear Arithmetic Solver"]
+    SMT --> C1["Invariant 1: Capital Conservation<br/>(Delta Cash + Value(Leases) &ge; 0)"]
+    SMT --> C2["Invariant 2: Zero Double-Allocation<br/>(&forall; i: ActiveLease(i) is Unique)"]
+    SMT --> C3["Invariant 3: Thermal Enclosure<br/>(T_rack &le; T_crit &amp; P_rack &le; P_max * SafetyFactor)"]
+    
+    C1 --> DECISION{"All Invariants<br/>Proved?"}
+    C2 --> DECISION
+    C3 --> DECISION
+    
+    DECISION -->|"Yes"| MERKLE["Construct RFC 6962 SHA-256 State Tree"]
+    DECISION -->|"No"| REJECT["Reject Action &amp; Emit Proof Counterexample"]
+    
+    MERKLE --> SIGN["RFC 8032 Ed25519 Cryptographic Signature"]
+    SIGN --> BLOCK["Commit to Append-Only Audit Ledger"]
+```
+
+#### 1. Invariant 1: Capital Balance Conservation
+$$\Delta \text{Cash} + \text{Value}(\text{Leases}) \ge 0 \quad \land \quad V_{\text{vault}} + \Delta \text{Cash} \ge V_{\text{reserve\_floor}}$$
+
+#### 2. Invariant 2: Zero Double-Allocation
+$$\forall i \in \text{AllocatedInstances}, \quad \text{Lease}_1(i) \land \text{Lease}_2(i) \implies \text{Lease}_1 = \text{Lease}_2$$
+
+#### 3. Invariant 3: Thermal Enclosure Boundary
+$$T_{\text{rack}} + \Delta T_{\text{throttle}} \le T_{\text{crit}} \quad \land \quad P_{\text{rack}} + \Delta P_{\text{throttle}} \le P_{\max} \cdot \eta_{\text{safety}}$$
+
+### 12.2 Cryptographic State Trees & RFC 8032 Ed25519 Digital Signatures
+1. **RFC 6962 Merkle State Tree:**  
+   Every state transition commits leaves with second-preimage domain separation:
+   $$\text{LeafHash} = \text{SHA-256}(0\text{x}00 \parallel \text{payload})$$
+   $$\text{NodeHash} = \text{SHA-256}(0\text{x}01 \parallel \text{LeftHash} \parallel \text{RightHash})$$
+2. **Pure Python Ed25519 Signatures on Twisted Edwards Curve:**  
+   $$-x^2 + y^2 = 1 - \frac{121665}{121666} x^2 y^2 \pmod{2^{255} - 19}$$
+   Using extended projective coordinates $(X:Y:Z:T)$ and precomputed base-point power tables, key generation, signing, and mathematical verification run with zero external C dependencies in $< 1\text{ ms}$.
+
+---
+
+## 13. Quantitative Alpha Invariant Audit & Verification Checklist
 
 | Metric Code | Formal Invariant | Physical / Financial Rationale | Hard Breach Threshold |
 | :--- | :--- | :--- | :--- |
@@ -576,6 +798,8 @@ This delivers a deterministic sub-15 nanosecond enqueue/dequeue throughput capab
 | **`INV-Q-04`** | $\kappa_{\text{AC}} = \sqrt{\frac{\lambda \sigma^2}{\eta}} > 0$ | Almgren-Chriss urgency coefficient existence ensuring positive convex impact. | $\kappa \le 0$ |
 | **`INV-Q-05`** | $T_{\text{die}} \le 83^\circ\text{C} \land T_{\text{coolant}} \le 45^\circ\text{C}$ | First-principles thermodynamic thermal boundary preventing silicon gate damage. | $T_{\text{die}} > 85^\circ\text{C}$ |
 | **`INV-Q-06`** | $\text{Lat}_{\text{ring\_buffer}} \le 25\text{ ns}$ | Hardware lock-free memory barrier execution budget for microsecond hot-path. | $\text{Lat} > 50\text{ ns}$ |
+| **`INV-Q-07`** | $\text{VaR}_{0.999} \le 0.45 \cdot V_0 \land \mathbb{P}(\text{Survival}) \ge 99.0\%$ | Extreme multi-scenario crisis survival under 10,000 Monte Carlo paths. | $\text{VaR}_{0.999} > 0.50 \cdot V_0 \lor \text{Survival} < 95\%$ |
+| **`INV-Q-08`** | $\Delta \text{Cash} + \text{Val} \ge 0 \land \text{DoubleAlloc} = \emptyset$ | SMT formal proof verification before any lease state commitment. | SMT Unproved / Counterexample |
 
 ---
 **Institutional Authorization:**  

@@ -18,7 +18,7 @@ sequenceDiagram
 
     SpotBook->>Gate: ArbitrageQuote ($1.55 vs $2.46 clearance)
     Gate->>Cache: Lookup Host IP Telemetry
-    Cache-->>Gate: Host Health OK (0.0% loss, 18ms ping)
+    Cache-->>Gate: Host Health OK (0.0 pct loss, 18ms ping)
     Gate->>Invariant: verify_capital_conservation(balance, cost)
     Invariant-->>Gate: Capital Floor Proved (Balance above $1,000)
     Gate->>Invariant: verify_thermal_power_boundary(rack_kw, node_kw)

@@ -658,6 +658,182 @@
             background: rgba(30, 41, 59, 0.3);
         }
 
+        /* Institutional Stress-Testing & Chaos Engineering Panel */
+        .stress-testing-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 24px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+            margin-bottom: 24px;
+        }
+
+        .stress-layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .stress-controls-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chaos-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-chaos {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            text-align: left;
+        }
+
+        .btn-chaos svg {
+            flex-shrink: 0;
+        }
+
+        .btn-chaos-uri {
+            background: rgba(14, 165, 233, 0.15);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+        .btn-chaos-uri:hover {
+            background: rgba(14, 165, 233, 0.3);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-chaos-frontier {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+        .btn-chaos-frontier:hover {
+            background: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-chaos-subsea {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.4);
+        }
+        .btn-chaos-subsea:hover {
+            background: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 16px rgba(248, 113, 113, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-chaos-reset {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-muted);
+            border-color: rgba(71, 85, 105, 0.6);
+        }
+        .btn-chaos-reset:hover {
+            background: rgba(51, 65, 85, 0.8);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .gauge-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .gauge-svg {
+            width: 220px;
+            height: 120px;
+        }
+
+        .risk-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            margin-top: 14px;
+        }
+
+        .risk-kpi-item {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(51, 65, 85, 0.4);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .risk-kpi-label {
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .risk-kpi-val {
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 4px;
+        }
+
+        .fan-chart-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .fan-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .fan-chart-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fan-chart-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .fan-svg-container {
+            width: 100%;
+            height: 310px;
+        }
+
         footer {
             margin-top: 24px;
             padding: 16px 28px;
@@ -835,6 +1011,201 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Institutional Stress-Testing & Chaos Engineering Deck -->
+    <div class="stress-testing-card">
+        <div class="card-header">
+            <h2>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-puf)" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Institutional Stress-Testing & Chaos Engineering Deck
+            </h2>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="header-tag">10,000 MONTE CARLO PATHS</span>
+                <span class="header-tag" style="background: rgba(244, 63, 94, 0.2); color: var(--red-alert); border: 1px solid rgba(244, 63, 94, 0.4);">TAIL VaR 0.999</span>
+            </div>
+        </div>
+
+        <div class="stress-layout">
+            <!-- Left Controls & Gauge Column -->
+            <div class="stress-controls-col">
+                <div class="chaos-btn-group">
+                    <button id="btnUriShock" class="btn-chaos btn-chaos-uri">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                        </svg>
+                        <div>
+                            <div>Inject Winter Storm Uri 2.0</div>
+                            <div style="font-size: 0.68rem; opacity: 0.8; font-family: 'JetBrains Mono'; font-weight: normal;">59.35 Hz • $9k/MWh • 45% Curtailment</div>
+                        </div>
+                    </button>
+                    <button id="btnFrontierShock" class="btn-chaos btn-chaos-frontier">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        <div>
+                            <div>Inject Frontier Model Shock</div>
+                            <div style="font-size: 0.68rem; opacity: 0.8; font-family: 'JetBrains Mono'; font-weight: normal;">-60k GPUs • 85% Preempt • +600 bps</div>
+                        </div>
+                    </button>
+                    <button id="btnSubseaShock" class="btn-chaos btn-chaos-subsea">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <div>
+                            <div>Inject Subsea Partition</div>
+                            <div style="font-size: 0.68rem; opacity: 0.8; font-family: 'JetBrains Mono'; font-weight: normal;">+350ms Spike • 8.5% Loss • Split Arb</div>
+                        </div>
+                    </button>
+                    <button id="btnChaosReset" class="btn-chaos btn-chaos-reset">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                        <div>
+                            <div>Reset Nominal Portfolio</div>
+                            <div style="font-size: 0.68rem; opacity: 0.8; font-family: 'JetBrains Mono'; font-weight: normal;">$10.0M Capital • 100% Reserve Safe</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- SVG Radial Stress Gauge -->
+                <div class="gauge-box">
+                    <div style="font-size: 0.72rem; color: var(--text-muted); font-family: 'JetBrains Mono'; text-transform: uppercase; margin-bottom: 4px;">SYSTEM STRESS INDEX</div>
+                    <svg class="gauge-svg" viewBox="0 0 200 110">
+                        <defs>
+                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#34d399"/>
+                                <stop offset="50%" stop-color="#fbbf24"/>
+                                <stop offset="85%" stop-color="#f43f5e"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Background track -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e293b" stroke-width="16" stroke-linecap="round"/>
+                        <!-- Filled arc -->
+                        <path id="gaugeArc" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGradient)" stroke-width="16" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="220"/>
+                        <!-- Center needle pivot -->
+                        <circle cx="100" cy="100" r="7" fill="#f8fafc"/>
+                        <!-- Needle line -->
+                        <line id="gaugeNeedle" x1="100" y1="100" x2="45" y2="70" stroke="#f43f5e" stroke-width="3" stroke-linecap="round" style="transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);"/>
+                        <text id="gaugeText" x="100" y="85" text-anchor="middle" fill="#f8fafc" font-size="20" font-weight="700" font-family="'JetBrains Mono', monospace">12%</text>
+                    </svg>
+                    <div id="gaugeSubtext" style="font-size: 0.7rem; color: var(--emerald-meso); font-family: 'JetBrains Mono'; font-weight: 600;">STATUS: NOMINAL NORMAL</div>
+
+                    <!-- Risk KPI meters -->
+                    <div class="risk-kpi-grid">
+                        <div class="risk-kpi-item">
+                            <div class="risk-kpi-label">Parametric VaR (0.999)</div>
+                            <div class="risk-kpi-val" id="valParamVar" style="color: var(--amber-feeds);">$324,500</div>
+                        </div>
+                        <div class="risk-kpi-item">
+                            <div class="risk-kpi-label">Tail CVaR (0.999)</div>
+                            <div class="risk-kpi-val" id="valTailCvar" style="color: var(--red-alert);">$368,200</div>
+                        </div>
+                        <div class="risk-kpi-item">
+                            <div class="risk-kpi-label">Max Drawdown (MDD)</div>
+                            <div class="risk-kpi-val" id="valMdd" style="color: #38bdf8;">4.2%</div>
+                        </div>
+                        <div class="risk-kpi-item">
+                            <div class="risk-kpi-label">Survival Prob</div>
+                            <div class="risk-kpi-val" id="valSurvival" style="color: var(--emerald-meso);">100.0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Monte Carlo Fan Chart Column -->
+            <div class="fan-chart-card">
+                <div class="fan-chart-header">
+                    <div class="fan-chart-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-hotpath)" stroke-width="2">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                        </svg>
+                        Portfolio Equity Stochastic Envelopes (48-Hour Horizon)
+                    </div>
+                    <div class="fan-chart-legend">
+                        <span style="color: rgba(56, 189, 248, 0.4);">█ P01-P99 Envelope</span>
+                        <span style="color: rgba(56, 189, 248, 0.7);">█ P05-P95 Fan</span>
+                        <span style="color: rgba(34, 211, 238, 1.0);">━ Median (P50)</span>
+                        <span style="color: #fb7185;">╌╌ Basel Floor ($2M)</span>
+                    </div>
+                </div>
+
+                <div class="fan-svg-container">
+                    <svg id="fanSvg" viewBox="0 0 740 280" style="width: 100%; height: 100%;">
+                        <defs>
+                            <linearGradient id="fanGradOuter" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.05"/>
+                            </linearGradient>
+                            <linearGradient id="fanGradInner" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45"/>
+                                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.15"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Grid background lines -->
+                        <g stroke="rgba(51, 65, 85, 0.3)" stroke-width="1" stroke-dasharray="3 3">
+                            <line x1="60" y1="30" x2="710" y2="30"/>
+                            <line x1="60" y1="80" x2="710" y2="80"/>
+                            <line x1="60" y1="130" x2="710" y2="130"/>
+                            <line x1="60" y1="180" x2="710" y2="180"/>
+                            <line x1="60" y1="230" x2="710" y2="230"/>
+
+                            <line x1="60" y1="30" x2="60" y2="230"/>
+                            <line x1="222" y1="30" x2="222" y2="230"/>
+                            <line x1="385" y1="30" x2="385" y2="230"/>
+                            <line x1="547" y1="30" x2="547" y2="230"/>
+                            <line x1="710" y1="30" x2="710" y2="230"/>
+                        </g>
+
+                        <!-- Y-Axis labels (Equity in Millions) -->
+                        <g fill="var(--text-dim)" font-size="10" font-family="'JetBrains Mono', monospace" text-anchor="end">
+                            <text x="52" y="34">$12.0M</text>
+                            <text x="52" y="84">$10.0M</text>
+                            <text x="52" y="134">$7.5M</text>
+                            <text x="52" y="184">$5.0M</text>
+                            <text x="52" y="234">$2.0M</text>
+                        </g>
+
+                        <!-- X-Axis labels (Hours) -->
+                        <g fill="var(--text-dim)" font-size="10" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                            <text x="60" y="250">t=0h</text>
+                            <text x="222" y="250">t=12h</text>
+                            <text x="385" y="250">t=24h (Mid-Crisis)</text>
+                            <text x="547" y="250">t=36h</text>
+                            <text x="710" y="250">t=48h (Settlement)</text>
+                        </g>
+
+                        <!-- Basel Capital Floor Line ($2.0M at y=230) -->
+                        <line x1="60" y1="230" x2="710" y2="230" stroke="#fb7185" stroke-width="2" stroke-dasharray="6 4"/>
+                        <text x="690" y="224" fill="#fb7185" font-size="9" font-family="'JetBrains Mono'" text-anchor="end" font-weight="600">MANDATORY BASEL RESERVE FLOOR ($2.0M)</text>
+
+                        <!-- Shaded percentile bands -->
+                        <path id="fanBandOuter" d="" fill="url(#fanGradOuter)"/>
+                        <path id="fanBandInner" d="" fill="url(#fanGradInner)"/>
+
+                        <!-- Sample Trajectory Lines -->
+                        <path id="samplePath1" d="" fill="none" stroke="rgba(251, 191, 36, 0.45)" stroke-width="1.2"/>
+                        <path id="samplePath2" d="" fill="none" stroke="rgba(244, 63, 94, 0.45)" stroke-width="1.2"/>
+
+                        <!-- Median P50 Line -->
+                        <path id="fanMedian" d="" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/>
+
+                        <!-- Current status indicator badge overlay -->
+                        <g transform="translate(70, 42)">
+                            <rect width="210" height="24" rx="4" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1"/>
+                            <text id="fanBadgeText" x="10" y="16" fill="#38bdf8" font-size="10" font-family="'JetBrains Mono'" font-weight="600">SCENARIO: NOMINAL EQUILIBRIUM</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Full-Width High-Fidelity SVG Architecture Diagram -->
@@ -1360,9 +1731,199 @@
                 el.addEventListener('input', updateBasisCalculation);
             });
 
+            // ==============================================================
+            // Institutional Stress-Testing & Chaos Engineering Interactive System
+            // ==============================================================
+            const btnUriShock = document.getElementById('btnUriShock');
+            const btnFrontierShock = document.getElementById('btnFrontierShock');
+            const btnSubseaShock = document.getElementById('btnSubseaShock');
+            const btnChaosReset = document.getElementById('btnChaosReset');
+
+            const gaugeArc = document.getElementById('gaugeArc');
+            const gaugeNeedle = document.getElementById('gaugeNeedle');
+            const gaugeText = document.getElementById('gaugeText');
+            const gaugeSubtext = document.getElementById('gaugeSubtext');
+
+            const valParamVar = document.getElementById('valParamVar');
+            const valTailCvar = document.getElementById('valTailCvar');
+            const valMdd = document.getElementById('valMdd');
+            const valSurvival = document.getElementById('valSurvival');
+            const fanBadgeText = document.getElementById('fanBadgeText');
+
+            const fanBandOuter = document.getElementById('fanBandOuter');
+            const fanBandInner = document.getElementById('fanBandInner');
+            const fanMedian = document.getElementById('fanMedian');
+            const samplePath1 = document.getElementById('samplePath1');
+            const samplePath2 = document.getElementById('samplePath2');
+
+            const X_COORDS = [60, 222, 385, 547, 710];
+
+            function equityToY(eqMillions) {
+                // $12M -> y=30, $2M -> y=230 (linear 20px per million)
+                const clamped = Math.max(0.5, Math.min(13.0, eqMillions));
+                return 30 + (12.0 - clamped) * 20.0;
+            }
+
+            function buildRibbonPath(pointsLow, pointsHigh) {
+                let d = `M ${X_COORDS[0]} ${equityToY(pointsHigh[0])}`;
+                for (let i = 1; i < X_COORDS.length; i++) {
+                    d += ` L ${X_COORDS[i]} ${equityToY(pointsHigh[i])}`;
+                }
+                for (let i = X_COORDS.length - 1; i >= 0; i--) {
+                    d += ` L ${X_COORDS[i]} ${equityToY(pointsLow[i])}`;
+                }
+                d += ' Z';
+                return d;
+            }
+
+            function buildLinePath(points) {
+                let d = `M ${X_COORDS[0]} ${equityToY(points[0])}`;
+                for (let i = 1; i < X_COORDS.length; i++) {
+                    d += ` L ${X_COORDS[i]} ${equityToY(points[i])}`;
+                }
+                return d;
+            }
+
+            const SCENARIO_DATA = {
+                nominal: {
+                    name: 'SCENARIO: NOMINAL EQUILIBRIUM',
+                    badgeColor: '#38bdf8',
+                    stressPct: 12,
+                    pVar: '$324,500',
+                    cVar: '$368,200',
+                    mdd: '4.2%',
+                    survival: '100.0%',
+                    statusText: 'STATUS: NOMINAL NORMAL (0.999 TAIL IMMUNE)',
+                    statusColor: 'var(--emerald-meso)',
+                    p50: [10.0, 10.08, 10.15, 10.22, 10.30],
+                    p05: [9.85, 9.72, 9.60, 9.52, 9.45],
+                    p95: [10.15, 10.42, 10.65, 10.88, 11.10],
+                    p01: [9.70, 9.40, 9.15, 8.95, 8.80],
+                    p99: [10.30, 10.75, 11.15, 11.45, 11.75],
+                    s1: [10.0, 10.12, 9.92, 10.35, 10.48],
+                    s2: [10.0, 9.88, 10.05, 9.75, 10.12]
+                },
+                uri: {
+                    name: 'SCENARIO: WINTER STORM URI 2.0 (ERCOT)',
+                    badgeColor: '#38bdf8',
+                    stressPct: 88,
+                    pVar: '$3,246,933',
+                    cVar: '$3,450,120',
+                    mdd: '32.8%',
+                    survival: '100.0%',
+                    statusText: 'STATUS: CRISIS (59.35 Hz • $9k/MWh • -45% LOAD)',
+                    statusColor: 'var(--red-alert)',
+                    p50: [10.0, 8.40, 6.72, 7.30, 8.15],
+                    p05: [9.80, 7.60, 5.80, 6.20, 7.10],
+                    p95: [10.10, 9.10, 7.60, 8.40, 9.20],
+                    p01: [9.60, 7.00, 4.90, 5.40, 6.20],
+                    p99: [10.25, 9.60, 8.20, 9.00, 9.80],
+                    s1: [10.0, 8.10, 6.35, 7.10, 8.05],
+                    s2: [10.0, 8.65, 7.10, 7.65, 8.40]
+                },
+                frontier: {
+                    name: 'SCENARIO: FRONTIER MODEL LAUNCH SHOCK',
+                    badgeColor: '#fbbf24',
+                    stressPct: 92,
+                    pVar: '$3,650,698',
+                    cVar: '$3,825,400',
+                    mdd: '36.7%',
+                    survival: '100.0%',
+                    statusText: 'STATUS: EXTREME COMPUTE SQUEEZE (-60k GPUs)',
+                    statusColor: 'var(--red-alert)',
+                    p50: [10.0, 7.95, 6.33, 6.85, 7.60],
+                    p05: [9.80, 7.10, 5.30, 5.70, 6.40],
+                    p95: [10.10, 8.70, 7.20, 7.90, 8.70],
+                    p01: [9.60, 6.40, 4.40, 4.80, 5.50],
+                    p99: [10.25, 9.20, 7.80, 8.50, 9.30],
+                    s1: [10.0, 7.60, 5.95, 6.45, 7.30],
+                    s2: [10.0, 8.25, 6.70, 7.20, 7.95]
+                },
+                subsea: {
+                    name: 'SCENARIO: SUBSEA TERABIT PARTITION',
+                    badgeColor: '#f87171',
+                    stressPct: 68,
+                    pVar: '$2,466,750',
+                    cVar: '$2,680,300',
+                    mdd: '25.7%',
+                    survival: '100.0%',
+                    statusText: 'STATUS: FABRIC PARTITION (+350ms • 8.5% LOSS)',
+                    statusColor: 'var(--amber-feeds)',
+                    p50: [10.0, 8.90, 7.43, 8.20, 9.10],
+                    p05: [9.85, 8.10, 6.60, 7.30, 8.15],
+                    p95: [10.12, 9.60, 8.25, 9.05, 9.90],
+                    p01: [9.65, 7.60, 5.90, 6.60, 7.40],
+                    p99: [10.25, 10.05, 8.80, 9.60, 10.45],
+                    s1: [10.0, 8.65, 7.15, 7.95, 8.85],
+                    s2: [10.0, 9.15, 7.70, 8.50, 9.35]
+                }
+            };
+
+            function applyStressScenario(key) {
+                const scen = SCENARIO_DATA[key];
+                if (!scen) return;
+
+                // 1. Update text metrics
+                valParamVar.textContent = scen.pVar;
+                valTailCvar.textContent = scen.cVar;
+                valMdd.textContent = scen.mdd;
+                valSurvival.textContent = scen.survival;
+
+                fanBadgeText.textContent = scen.name;
+                fanBadgeText.setAttribute('fill', scen.badgeColor);
+
+                // 2. Animate Gauge
+                gaugeText.textContent = `${scen.stressPct}%`;
+                gaugeSubtext.textContent = scen.statusText;
+                gaugeSubtext.style.color = scen.statusColor;
+
+                const arcTotal = 251.3;
+                const offset = arcTotal * (1 - (scen.stressPct / 100));
+                gaugeArc.setAttribute('stroke-dashoffset', offset.toFixed(1));
+
+                // Needle trigonometry
+                const angleRad = Math.PI * (1 - (scen.stressPct / 100));
+                const nx = 100 - 55 * Math.cos(angleRad);
+                const ny = 100 - 55 * Math.sin(angleRad);
+                gaugeNeedle.setAttribute('x2', nx.toFixed(1));
+                gaugeNeedle.setAttribute('y2', ny.toFixed(1));
+
+                // 3. Update SVG Fan Chart Paths
+                fanBandOuter.setAttribute('d', buildRibbonPath(scen.p01, scen.p99));
+                fanBandInner.setAttribute('d', buildRibbonPath(scen.p05, scen.p95));
+                fanMedian.setAttribute('d', buildLinePath(scen.p50));
+                samplePath1.setAttribute('d', buildLinePath(scen.s1));
+                samplePath2.setAttribute('d', buildLinePath(scen.s2));
+            }
+
+            // Button Event Listeners
+            btnUriShock.addEventListener('click', function() {
+                applyStressScenario('uri');
+                appendLog('CHAOS_INJECT', 'tag-trip', 'STRESS SCENARIO INJECTED: "Winter Storm Uri 2.0". ERCOT LMP $9,000/MWh. 45% load curtailment order active.');
+                appendLog('SMT_PROVER', 'tag-ok', 'Formal Invariant Verified: Basel Capital Floor ($2.0M) preserved throughout 48h drawdown envelope.');
+            });
+
+            btnFrontierShock.addEventListener('click', function() {
+                applyStressScenario('frontier');
+                appendLog('CHAOS_INJECT', 'tag-trip', 'STRESS SCENARIO INJECTED: "Frontier Model Launch Shock". 60,000 GPUs withdrawn. Retail preemption rate 85%.');
+                appendLog('ALMGREN_CHRISS', 'tag-warn', 'Execution schedule switched to hyperbolic urgent clearance (lambda=1e-3). Slippage mitigated.');
+            });
+
+            btnSubseaShock.addEventListener('click', function() {
+                applyStressScenario('subsea');
+                appendLog('CHAOS_INJECT', 'tag-warn', 'STRESS SCENARIO INJECTED: "Subsea Terabit Partition". Transatlantic latency +350ms, packet loss 8.5%.');
+                appendLog('ACTION_GATE', 'tag-info', 'Fast-Path circuit breaker isolated transatlantic routing. Cross-region order book arbitrage suspended.');
+            });
+
+            btnChaosReset.addEventListener('click', function() {
+                applyStressScenario('nominal');
+                appendLog('CHAOS_RESET', 'tag-ok', 'Portfolio returned to Nominal Equilibrium ($10.0M baseline). All tail risk envelopes normalized.');
+            });
+
             // Initial Runs
             updateGridSimulation(60.000);
             updateBasisCalculation();
+            applyStressScenario('nominal');
 
         })();
     </script>

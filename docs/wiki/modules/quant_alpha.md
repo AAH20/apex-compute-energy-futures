@@ -502,7 +502,66 @@ print(f"Latest Clock: {latest_tick.clock_ghz:.2f} GHz, Queue Depth: {latest_tick
 
 ---
 
-## 7. Mathematical Invariant Verification Matrix
+## 7. `stress_tester` (`simulation/stress_tester.py`)
+
+### Theoretical Model
+Black-swan crisis events in compute and electricity markets trigger catastrophic non-linear losses through compound physical and financial failures:
+* **Winter Storm Uri 2.0:** Power LMP spikes to $9,000/MWh for 48h; 45% mandatory load curtailment forces GPU shutdowns.
+* **Frontier Model Launch Shock:** Instant withdrawal of 60,000 GPUs; spot retail preemption jumps to 85%; basis widens +600 bps.
+* **Subsea Terabit Partition:** +350ms transatlantic latency spike; 8.5% packet loss breaks cross-venue arbitrage.
+
+The engine computes tail risk measures at $\alpha = 0.999$:
+$$\text{VaR}_{0.999} = \mu_L + z_{0.999} \cdot \sigma_L, \quad \text{CVaR}_{0.999} = \mu_L + \sigma_L \frac{\phi(z_{0.999})}{1 - 0.999}$$
+$$\mathbb{P}(\text{Survival}) = \mathbb{P}\left(\min_{0 \le t \le T} V_t \ge V_{\text{floor}}\right)$$
+
+### Production Usage
+```python
+from apex_compute_futures.simulation.stress_tester import InstitutionalStressTestingEngine
+
+engine = InstitutionalStressTestingEngine(default_seed=42)
+uri_scen = engine.create_winter_storm_uri_scenario(initial_capital=10_000_000.0)
+result = engine.run_stress_test(uri_scen, num_paths=10_000, time_steps=48)
+
+print(f"VaR (0.999): ${result.historical_var_999:,.2f}")
+print(f"CVaR (0.999): ${result.cvar_999:,.2f}")
+print(f"Max Drawdown: {result.max_drawdown_pct:.1f}%")
+print(f"System Survival: {result.system_survival_probability:.1f}%")
+```
+
+---
+
+## 8. `settlement_prover` (`core/settlement_prover.py`)
+
+### Theoretical Model
+All compute forward trade allocations, BESS battery dispatches, and DVFS throttling actions are compiled into First-Order Logic constraints over Real Arithmetic and formally proved prior to state commitment:
+1. **Capital Balance Conservation:** $\Delta \text{Cash} + \text{Value}(\text{Leases}) \ge 0 \land V_{\text{vault}} + \Delta \text{Cash} \ge V_{\text{floor}}$
+2. **Zero Double-Allocation Invariant:** No GPU hardware instance can be leased simultaneously to multiple counterparties.
+3. **Thermal Enclosure Invariant:** $T_{\text{rack}} \le T_{\text{crit}} \land P_{\text{rack}} \le P_{\max} \cdot \eta_{\text{safety}}$
+
+Every state transition generates an RFC 6962 SHA-256 Merkle root and an RFC 8032 pure-Python Ed25519 digital signature, appended to a verifiable tamper-evident cryptographic ledger.
+
+### Production Usage
+```python
+from apex_compute_futures.core.settlement_prover import FormalSettlementProver, ProofStatus
+
+prover = FormalSettlementProver(reserve_floor_usd=1_000_000.0, max_rack_kw=40.0, t_crit_c=85.0)
+
+ok, cert, block = prover.prove_trade_settlement(
+    trade_id="TR_SETTLE_01",
+    instance_ids=["h100_node_1", "h100_node_2"],
+    cash_delta_usd=-85_000.0,
+    lease_value_usd=95_000.0,
+    vault_balance_usd=3_000_000.0
+)
+
+assert ok is True
+assert cert.status == ProofStatus.PROVED
+print(f"Committed Block: {block.block_index}, Signature: {block.signature_hex[:16]}...")
+```
+
+---
+
+## 9. Mathematical Invariant Verification Matrix
 
 | Module | Verification Formula | Safety / Arbitrage Guarantee | Enforcement Mechanism |
 | :--- | :--- | :--- | :--- |
@@ -512,6 +571,8 @@ print(f"Latest Clock: {latest_tick.clock_ghz:.2f} GHz, Queue Depth: {latest_tick
 | **`thermal_pue`** | $T_{\text{die}} \le 83^\circ\text{C} \land T_{\text{coolant}} \le 45^\circ\text{C}$ | Prevents permanent gate oxide breakdown and liquid cavitation boiling. | State boundary guard in `step_die_temperature`. |
 | **`almgren_chriss`** | $\kappa = \sqrt{\frac{\lambda \sigma^2}{\eta}} > 0$ | Guarantees uniqueness and existence of optimal hyperbolic execution path. | Positive parameter validator in `AlmgrenChrissEngine`. |
 | **`ring_buffer`** | $(\text{Head} - \text{Tail}) < \text{Capacity}$ | Zero heap reallocation and lock-free thread safety during microsecond burst events. | Power-of-two bitmask indexing in `RingBuffer.push`. |
+| **`stress_tester`** | $\text{VaR}_{0.999} \le 0.45 \cdot V_0 \land \mathbb{P}(\text{Survival}) \ge 99.0\%$ | Portfolio capital preservation across 10,000-path black-swan crisis simulations. | Statistical quantile evaluation in `run_stress_test`. |
+| **`settlement_prover`** | $\Delta \text{Cash} + \text{Val} \ge 0 \land \text{DoubleAlloc} = \emptyset$ | Mathematical proof that settlement does not breach capital floor or duplicate hardware leases. | First-order SMT verification in `prove_trade_settlement`. |
 
 ---
 **Institutional Authorization:**  
