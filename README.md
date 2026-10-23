@@ -39,15 +39,15 @@ Traditional monolithic machine learning models fail when trying to couple semico
 
 ```mermaid
 flowchart TD
-    EXT_FEEDS{{"Commodity & Spot Feeds<br>(ERCOT LMP • vast.ai)"}} -->|Raw Ticks| PRED["Predictive Core<br>(Fractional Diff d*)"]
-    PRED -->|Stationary d*| CURVE["Forward Yield Curve<br>(Cost of Carry F(t,T))"]
-    CURVE -->|Clearance Map| GATE["Fast ActionGate<br>(Risk & SMT Bounds)"]
+    EXT_FEEDS(["External Feeds: ERCOT LMP & vast.ai"]) -->|"Raw Ticks"| PRED["Predictive Core: Fractional Diff"]
+    PRED -->|"Stationary Series"| CURVE["Forward Yield Curve: Cost-of-Carry"]
+    CURVE -->|"Clearance Map"| GATE["Fast ActionGate: SMT Bounds"]
     
-    HEALTH["Host Telemetry Pool<br>(eBPF Probe Cache)"] -->|Health OK| GATE
-    GATE -->|Pass < 10us| EXEC["Arbitrage Dispatch<br>(Almgren-Chriss)"]
+    HEALTH["Host Telemetry: eBPF Cache"] -->|"Health OK"| GATE
+    GATE -->|"Sub-10us Pass"| EXEC["Arbitrage Dispatch: Almgren-Chriss"]
     
-    EXEC -->|Under-Freq| AMM["Synthetic AMM<br>(DVFS Shedding)"]
-    EXEC -.->|Post-Trade| AUDIT[("Evidence Vault<br>(SHA-256 Hash)")]
+    EXEC -->|"Under-Freq Shed"| AMM["Synthetic AMM: DVFS Droop"]
+    EXEC -.->|"Post-Trade Audit"| AUDIT[("Evidence Vault: SHA-256 Ledger")]
 ```
 
 ---
@@ -61,13 +61,13 @@ The 40%–70% price discount on retail platforms is not free alpha; it represent
 
 ```mermaid
 flowchart TD
-    WORKLOAD{{"Enterprise Workload"}} -->|Stateful Run| HYPER["Hyperscaler Fabric<br>(3.2 Tbps • Tier 4)"]
-    WORKLOAD -->|Stateless Task| RETAIL["Retail Spot Hosts<br>(1 Gbps • Unvetted)"]
+    WORKLOAD(["Enterprise Workload Profiler"]) -->|"Stateful Run"| HYPER["Hyperscaler Fabric: 3.2 Tbps Tier-4"]
+    WORKLOAD -->|"Stateless Task"| RETAIL["Retail Spot Hosts: 1 Gbps WAN"]
     
-    HYPER -->|Rigid EDP| BASIS["Compute Basis<br>(Forward Curve F)"]
-    RETAIL -->|40% Discount| BASIS
+    HYPER -->|"Rigid EDP"| BASIS["Compute Basis: Forward Curve F"]
+    RETAIL -->|"Spot Discount"| BASIS
     
-    BASIS -->|ActionGate| RISK["Risk Allocation<br>(Stateless Only)"]
+    BASIS -->|"ActionGate"| RISK["Risk Allocation: Stateless Only"]
 ```
 
 ### The Architectural & Economic Divergence Matrix
@@ -92,13 +92,13 @@ If an adversary extracts compiled production binaries and disassembles them usin
 
 ```mermaid
 flowchart TD
-    ORACLE{{"Apex Cloud Oracle<br>(Encrypted Stream)"}} -->|Kyber1024 KEM| ENCLAVE["AWS Nitro Enclave<br>(Memory Isolated)"]
-    PUF["Hardware PUF Root<br>(Anti-Tamper Zeroize)"] -->|Ephemeral Key| ENCLAVE
+    ORACLE(["Apex Cloud Oracle: Encrypted Stream"]) -->|"Kyber-1024 KEM"| ENCLAVE["AWS Nitro Enclave: Isolated RAM"]
+    PUF["Hardware PUF Root: Anti-Tamper"] -->|"Ephemeral Key"| ENCLAVE
     
-    ENCLAVE -->|Homomorphic Ring| SOLVER["Fast ActionGate<br>(Open-Core Engine)"]
+    ENCLAVE -->|"Homomorphic Ring"| SOLVER["Fast ActionGate Engine"]
     
-    DECOMP{{Ghidra / IDA Pro}} -.->|Static Dump| EMPTY["Empty Algebraic Shell<br>(Zero Static Alpha)"]
-    DECOMP -.->|ptrace / Hook| KILL["PUF Ephemeral Trap<br>(Zeroizes Registers)"]
+    DECOMP(["Static Decompilation: Ghidra / IDA Pro"]) -.->|"Static Dump"| EMPTY["Empty Algebraic Shell: Zero Weights"]
+    DECOMP -.->|"ptrace Attach"| KILL["PUF Ephemeral Trap: Zeroize Key"]
 ```
 
 ### 1. The Empty Chassis Paradigm (Separation of Form and Weight)

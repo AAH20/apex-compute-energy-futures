@@ -10,7 +10,7 @@ For production enterprise deployments, it seamlessly binds to and orchestrates s
 
 ```mermaid
 graph TD
-    CORE["apex-compute-energy-futures (This Monorepo)<br/>• Forward Yield Curves & Pricing<br/>• Fractional Diff & CUSUM Sampling<br/>• ActionGate (<10 µs Execution)"]
+    CORE["apex-compute-energy-futures (Monorepo Core)<br/>- Forward Yield Curves & Pricing<br/>- Fractional Diff & CUSUM Sampling<br/>- ActionGate (Sub-10us Execution)"]
 
     CORE -.->|"Read-Only Physical PUE & Gang Packing"| DCC["datacenter_np_hard_kernel<br/>(Data Center Commander)"]
     CORE -.->|"Sub-2ms DVFS Power Shedding"| GIGAWATT["gigawatt_ride_through_amm_kernel<br/>(Energy-Compute Co-Optimization)"]

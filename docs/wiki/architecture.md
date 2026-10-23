@@ -8,19 +8,19 @@ This document specifies the operational dataflow of `apex-compute-energy-futures
 
 ```mermaid
 flowchart TD
-    EXT_DATA{{Market Feeds}} -->|LMP + Spot| T3_PRED[Predictive Core]
-    T3_PRED -->|d* Series| T2_CURVE[Forward Yield Curve]
-    T2_CURVE -->|Clearance Map| T1_GATE[ActionGate Engine]
+    EXT_DATA(["Market Feeds: ERCOT LMP & vast.ai"]) -->|"LMP & Spot"| T3_PRED["Predictive Core"]
+    T3_PRED -->|"Stationary Series"| T2_CURVE["Forward Yield Curve"]
+    T2_CURVE -->|"Clearance Map"| T1_GATE["ActionGate Engine"]
     
-    T1_HOST[Host Health Pool] -->|eBPF Telemetry| T1_GATE
-    T1_GATE -->|Pass < 10us| T1_EXEC[Arbitrage Dispatch]
+    T1_HOST["Host Health Pool"] -->|"eBPF Telemetry"| T1_GATE
+    T1_GATE -->|"Sub-10us Pass"| T1_EXEC["Arbitrage Dispatch"]
     
-    T1_EXEC -->|Shed MW| AMM[Synthetic AMM]
-    T1_EXEC -.->|Post-Trade| AUDIT[(Evidence Vault)]
+    T1_EXEC -->|"Shed MW"| AMM["Synthetic AMM"]
+    T1_EXEC -.->|"Post-Trade"| AUDIT[("Evidence Vault")]
 ```
 
 ### Shape & Flow Semantics
-* `EXT_DATA` (`{{}}`): External commodity feeds (ERCOT LMP, gas futures, vast.ai order books).
+* `EXT_DATA` (`([])`): External commodity feeds (ERCOT LMP, gas futures, vast.ai order books).
 * `T3_PRED`, `T2_CURVE`, `T1_GATE`, `T1_EXEC`, `AMM` (`[]`): Core in-memory compute modules.
 * `AUDIT` (`[()]`): Immutable SHA-256 evidence vault and ledger.
 * `-->`: In-memory synchronous fast path (total latency $\le 20\text{ µs}$).
@@ -49,11 +49,11 @@ The platform explicitly distinguishes the physical fabrics and contractual mecha
 
 ```mermaid
 flowchart TD
-    INGEST{{Workload Profiler}} -->|High Comm C/W| HYPER[HyperscalerIB<br>3.2 Tbps Fabric]
-    INGEST -->|Zero Comm C/W| RETAIL[Retail Spot<br>1 Gbps WAN]
+    INGEST(["Workload Profiler"]) -->|"High Comm C/W"| HYPER["Hyperscaler: 3.2 Tbps Fabric"]
+    INGEST -->|"Zero Comm C/W"| RETAIL["Retail Spot: 1 Gbps WAN"]
     
-    HYPER -->|EDP Drawdown| PROD[(Enterprise Core)]
-    RETAIL -->|60% Spread| BATCH[(Stateless Queue)]
+    HYPER -->|"EDP Drawdown"| PROD[("Enterprise Core")]
+    RETAIL -->|"60 Pct Spread"| BATCH[("Stateless Queue")]
 ```
 
 * **Network Fat-Tree vs. Commodity WAN:** Hyperscalers provide non-blocking 3.2 Tbps InfiniBand/RoCEv2 suited for distributed gradient synchronization. Retail spot hosts sit on unpeered 1 Gbps WANs where an 80 GB checkpoint requires $>10$ minutes to transfer, making stateful model migration mathematically infeasible.

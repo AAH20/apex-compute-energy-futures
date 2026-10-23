@@ -4,13 +4,13 @@ This document details the microsecond execution sequences across critical runtim
 
 ---
 
-## 1. Fast-Path Arbitrage Evaluation (< 10 µs)
+## 1. Fast-Path Arbitrage Evaluation (Sub-10us)
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor SpotBook as Spot Market Feed
-    participant Gate as ActionGate (<10 µs)
+    participant Gate as ActionGate (Sub-10us)
     participant Cache as Host Health Cache
     participant Invariant as Invariant Verifier
     participant Node as Target GPU Node
@@ -20,10 +20,10 @@ sequenceDiagram
     Gate->>Cache: Lookup Host IP Telemetry
     Cache-->>Gate: Host Health OK (0.0% loss, 18ms ping)
     Gate->>Invariant: verify_capital_conservation(balance, cost)
-    Invariant-->>Gate: Capital Floor Proved (Balance >= $1,000)
+    Invariant-->>Gate: Capital Floor Proved (Balance above $1,000)
     Gate->>Invariant: verify_thermal_power_boundary(rack_kw, node_kw)
-    Invariant-->>Gate: Thermal Headroom Proved (Total <= 32 kW)
-    Gate->>Node: Dispatch Container Lease (<20 µs)
+    Invariant-->>Gate: Thermal Headroom Proved (Total within 32 kW)
+    Gate->>Node: Dispatch Container Lease (Sub-20us)
     Gate-->>Vault: Async Emit Signed Audit Hash (SHA-256)
 ```
 
@@ -44,7 +44,7 @@ sequenceDiagram
     AMM->>AMM: Solve Invariant dC/df = (gamma/beta) * (C0/f0) * Droop
     AMM->>DVFS: Dispatch Clock Throttle (6.67 MW shedding)
     DVFS->>GPU: Microsecond DVFS Clock Drop (P proportional to f^2.8)
-    GPU-->>DVFS: Shedding Verified in < 2 ms (Zero weight loss)
+    GPU-->>DVFS: Shedding Verified in sub-2ms (Zero weight loss)
     AMM-->>RTO: Settle 200.00 MW-s Synthetic Inertia ($250/30s event)
 ```
 

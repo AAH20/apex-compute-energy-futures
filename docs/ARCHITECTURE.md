@@ -25,12 +25,12 @@ flowchart TD
         T2_DATA --> T2_MODEL --> T2_OUTPUT
     end
 
-    subgraph Tier1 ["Tier 1: Micro-Horizon Real-Time Execution Core (<10 µs)"]
-        T1_DATA["L3 Order Books & Spot Ticks (vast.ai, RunPod)<br/>eBPF Host Telemetry (Ping, Packet Loss, Jitter Cache)"]
-        T1_GATE["Deterministic Fast-Path ActionGate<br/>P_spot < P_clear AND Host in HealthySet"]
-        T1_EXEC["High-Throughput Matching & Liquidation Engine<br/>Almgren-Chriss Hyperbolic Trajectory • DVFS Shedding"]
+    subgraph Tier1 ["Tier 1: Micro-Horizon Real-Time Execution Core (Sub-10us)"]
+        T1_DATA["L3 Order Books & Spot Ticks (vast.ai, RunPod)<br/>eBPF Host Telemetry (Ping, Loss, Jitter Cache)"]
+        T1_GATE["Deterministic Fast-Path ActionGate<br/>P_spot under P_clear AND Host in HealthySet"]
+        T1_EXEC["High-Throughput Matching & Liquidation Engine<br/>Almgren-Chriss Hyperbolic Trajectory / DVFS Shedding"]
         T2_OUTPUT -->|"Pushed Hourly to Shared Memory"| T1_GATE
-        T1_DATA --> T1_GATE -->|"Approved (<10 µs)"| T1_EXEC
+        T1_DATA --> T1_GATE -->|"Approved Sub-10us"| T1_EXEC
     end
 
     subgraph OutOfBand ["Asynchronous Verification & Audit Ledger"]
@@ -137,13 +137,13 @@ Proprietary trading firmware and physical infrastructure kernels deployed into u
 
 ```mermaid
 flowchart TD
-    ATTACKER{{"Adversary / Tool<br>(Ghidra / IDA / REA)"}} -->|Static Disassembly| CHASSIS["Empty Chassis OSS<br>(Symbolic AST Only)"]
-    CHASSIS -->|Zero Secret Weights| DUMMY["Zero Exploit Surface<br>(Invariant Algebraic Stubs)"]
+    ATTACKER(["Adversary / Tool: Ghidra, IDA, REA"]) -->|"Static Disassembly"| CHASSIS["Empty Chassis OSS: Symbolic AST Only"]
+    CHASSIS -->|"Zero Secret Weights"| DUMMY["Zero Exploit Surface: Invariant Stubs"]
     
-    HSM{{NIST FIPS 203 HSM}} -->|ML-KEM-1024 Ratchet| RLWE["Ring-LWE Blind Space<br>(Tau = 60s Ephemeral)"]
-    RLWE -->|Hardware PUF Bound| HOTCORE["Ephemeral Hot-Path<br>(In-Memory Execution)"]
+    HSM(["NIST FIPS 203 HSM Oracle"]) -->|"ML-KEM-1024 Ratchet"| RLWE["Ring-LWE Blind Space: Tau 60s Ephemeral"]
+    RLWE -->|"Hardware PUF Bound"| HOTCORE["Ephemeral Hot-Path: In-Memory Exec"]
     
-    ATTACKER -.->|Memory Attach / Breakpoint| ZEROIZE["PUF Tamper Trip<br>(Immediate Key Zeroization)"]
+    ATTACKER -.->|"ptrace Attach Trap"| ZEROIZE["PUF Tamper Trip: Immediate Zeroization"]
 ```
 
 ### A. The Empty Chassis Paradigm
