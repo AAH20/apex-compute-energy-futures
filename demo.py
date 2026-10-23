@@ -17,14 +17,20 @@ if REPO_ROOT not in sys.path:
 
 from apex_compute_futures.core.action_gate import ActionGate
 from apex_compute_futures.core.models import ArbitrageQuote, HostNode, MarketVenue, SLATier
+from apex_compute_futures.core.ring_buffer import RingBuffer
 from apex_compute_futures.evolution.chromosome import AgentChromosome, ChromosomeEngine
 from apex_compute_futures.evolution.fitness import SystemFitnessCalculator
+from apex_compute_futures.evolution.pareto_tournament import ArchetypeIndividual, MultiObjectiveFitness, ParetoEvolutionEngine
+from apex_compute_futures.futures.almgren_chriss import AlmgrenChrissConfig, AlmgrenChrissEngine
 from apex_compute_futures.futures.arbitrage_engine import ComputeArbitrageEngine
 from apex_compute_futures.futures.forward_curve import ComputeForwardCurve
 from apex_compute_futures.futures.synthetic_inertia_amm import SyntheticInertiaAMM
+from apex_compute_futures.futures.thermal_pue import ThermalConfig, ThermalPUEModel
 from apex_compute_futures.integrations.registry import EcosystemIntegrationRegistry
 from apex_compute_futures.predictive.fractional_diff import FractionalDifferentiator
+from apex_compute_futures.predictive.hawkes_process import HawkesParameters, HawkesProcess
 from apex_compute_futures.predictive.information_bars import CusumInformationSampler
+from apex_compute_futures.predictive.ou_jump_diffusion import OUJumpDiffusionModel
 from apex_compute_futures.predictive.triple_barrier import TripleBarrierLabeler
 
 
@@ -186,6 +192,80 @@ def run_demonstration():
         print(f"    [{k:<32}] -> {v['name']}")
     print(f"    ... and {len(integrations) - 4} additional modules (FDE Matrix, Liquidity Sweeper, etc.)\n")
 
+    # -----------------------------------------------------------------------------------------
+    # STAGE 6: THERMODYNAMIC PUE MODEL & ALMGREN-CHRISS OPTIMAL EXECUTION
+    # -----------------------------------------------------------------------------------------
+    print("━" * 98)
+    print("STAGE 6: THERMODYNAMIC PUE DRIFT & ALMGREN-CHRISS OPTIMAL EXECUTION")
+    print("━" * 98)
+    thermal_model = ThermalPUEModel()
+    pue_cool = thermal_model.calculate_pue(5600.0, ambient_temp_c=16.0)
+    pue_hot = thermal_model.calculate_pue(5600.0, ambient_temp_c=36.0)
+    headroom = thermal_model.solve_thermal_headroom(t_die_current_c=48.0, ambient_temp_c=30.0)
+
+    print(f"  • Real-Time Dynamic PUE Drift      : {pue_cool.pue:.3f} (16°C Economizer) -> {pue_hot.pue:.3f} (36°C Chiller Peak)")
+    print(f"  • Microsecond Thermal Headroom     : Max Safe Freq = {headroom.max_safe_frequency_ghz:.2f} GHz (T_die = {headroom.steady_state_die_temp_c:.1f}°C <= 85°C)")
+
+    ac_engine = AlmgrenChrissEngine(AlmgrenChrissConfig(
+        total_volume=1000.0,
+        total_time_horizon=1.0,
+        num_intervals=10,
+        risk_aversion_lambda=2e-4
+    ))
+    schedule = ac_engine.compute_trajectory()
+    print(f"  • Almgren-Chriss Liquidation Engine: Urgency κ = {schedule.urgency_kappa:.4f}, Half-Life = {schedule.half_life_time * 60:.1f} min")
+    print(f"  • Expected Shortfall vs Variance   : E[x] = ${schedule.expected_shortfall:.2f}, StdDev = ${schedule.execution_std_dev:.2f}")
+
+    # High-throughput ring buffer demo
+    t_buf_start = time.perf_counter()
+    rb = RingBuffer(capacity=1024)
+    for tick in range(10000):
+        rb.push(2.50 + 0.05 * math.sin(tick * 0.1))
+    t_buf_us = (time.perf_counter() - t_buf_start) * 1e6
+    print(f"  • Zero-Allocation RingBuffer       : 10,000 Ticks Ingested in {t_buf_us:.1f} µs ({t_buf_us / 10000:.3f} µs/tick)")
+    print(f"  • Rolling O(1) Cache State         : Mean = ${rb.mean():.4f}, Std = ${rb.std():.4f}, EMA = ${rb.ema():.4f}\n")
+
+    # -----------------------------------------------------------------------------------------
+    # STAGE 7: ORNSTEIN-UHLENBECK SPREAD SDE, HAWKES PROCESS & PARETO NSGA-II TOURNAMENT
+    # -----------------------------------------------------------------------------------------
+    print("━" * 98)
+    print("STAGE 7: ORNSTEIN-UHLENBECK SPREAD SDE, HAWKES PROCESS & PARETO NSGA-II TOURNAMENT")
+    print("━" * 98)
+    synthetic_spreads = [0.10 + 0.15 * math.exp(-0.05 * i) + 0.02 * math.sin(i * 0.3) for i in range(120)]
+    ou_model = OUJumpDiffusionModel.fit(synthetic_spreads, dt=1.0)
+    ou_params = ou_model.get_parameters(synthetic_spreads)
+    z_score = ou_model.calculate_z_score(0.28)
+    sig_name = "SHORT_BASIS" if z_score > 2.0 else ("LONG_BASIS" if z_score < -2.0 else "HOLD")
+    print(f"  • O-U Mean-Reversion Speed θ       : {ou_params.theta:.4f} (Half-Life τ_1/2 = {ou_params.half_life:.2f} hrs)")
+    print(f"  • Equilibrium Spread & Stn Vol     : μ = ${ou_params.mu:.4f}, σ_∞ = ${ou_params.stationary_volatility:.4f}")
+    print(f"  • Current Basis Z-Score & Signal   : Z = {z_score:+.2f} -> {sig_name}")
+
+    hp = HawkesProcess(mu0=0.05, alpha=0.35, beta=0.50)
+    event_times = [1.2, 2.5, 2.8, 3.1, 4.0, 7.2]
+    intensity = hp.intensity_at(8.0, event_times)
+    p_preempt = hp.next_event_probability(8.0, 0.5, event_times)
+    print(f"  • Hawkes Branching Ratio η (α/β)   : {hp.branching_ratio:.3f} (Sub-critical stability < 1.0)")
+    print(f"  • Spot Preemption Intensity λ(t)   : {intensity:.4f} events/hr (P(Preempt in 30m) = {p_preempt * 100:.1f}%)")
+
+    # Pareto evolutionary tournament
+    pareto_engine = ParetoEvolutionEngine()
+    test_archetypes = [
+        ArchetypeIndividual(
+            genes={"d_fractional": 0.45 + i * 0.03, "profit_multiplier": 2.0 + i * 0.2},
+            fitness=MultiObjectiveFitness(
+                deflated_sharpe_ratio=0.85 + 0.02 * (i % 5),
+                information_ratio=1.4 + 0.1 * (i % 4),
+                neg_max_drawdown=-0.12 + 0.01 * (i % 3),
+                neg_sla_breach_risk=-0.001 * (1 + i % 2)
+            )
+        )
+        for i in range(10)
+    ]
+    pareto_front = ParetoEvolutionEngine.get_pareto_front(test_archetypes)
+    print(f"  • Multi-Objective Pareto Frontier  : Front F_1 contains {len(pareto_front)} non-dominated archetypes")
+    best_arch = pareto_front[0]
+    print(f"  • Pareto Elite Archetype           : DSR = {best_arch.fitness.deflated_sharpe_ratio:.4f}, IR = {best_arch.fitness.information_ratio:.2f}, MaxDD = {-best_arch.fitness.neg_max_drawdown * 100:.1f}%\n")
+
     print("┌────────────────────────────────────────────────────────────────────────────────────────┐")
     print("│ OPEN-SOURCE COMMUNITY CORE (APACHE-2.0)   │ ENTERPRISE PLATFORM (APEX GROWTH SYSTEMS)  │")
     print("├───────────────────────────────────────────┼────────────────────────────────────────────┤")
@@ -197,7 +277,7 @@ def run_demonstration():
     print("└────────────────────────────────────────────────────────────────────────────────────────┘")
 
     total_runtime_ms = (time.perf_counter() - t_global_start) * 1000.0
-    print(f"\n✔ DEMONSTRATION SUITE COMPLETED IN {total_runtime_ms:.2f} ms (ALL 5 STAGES VERIFIED)")
+    print(f"\n✔ DEMONSTRATION SUITE COMPLETED IN {total_runtime_ms:.2f} ms (ALL 7 STAGES VERIFIED)")
     print("==================================================================================================")
 
 

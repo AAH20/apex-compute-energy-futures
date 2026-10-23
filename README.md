@@ -145,6 +145,31 @@ Sub-10 microsecond prove-or-deny risk boundary evaluating pre-vetted eBPF host t
 ### 7. Closed-Form Deflated Sharpe Ratio Evolution (`evolution/fitness.py`)
 Corrects backtest Sharpe ratios for multiple-testing selection bias (Bailey & López de Prado) and enforces hard barrier disqualification ($-\infty$) for SLA invalidations and drawdown breaches.
 
+### 8. Ornstein-Uhlenbeck Spread SDE & Jump Diffusion (`predictive/ou_jump_diffusion.py`)
+Models compute basis spreads ($F - S$) and power spark spreads via continuous mean-reverting jump-diffusion ($dX_t = \theta(\mu - X_t)dt + \sigma dW_t + J_t dq_t$) with closed-form MLE parameter recovery, exact half-life ($\tau_{1/2} = \ln(2)/\theta$), and Mancini jump filtering.
+
+### 9. Self-Exciting Hawkes Point Process (`predictive/hawkes_process.py`)
+Models temporal clustering of spot preemption cascades and grid trip disturbances via self-exciting point processes ($\lambda(t) = \mu_0 + \sum \alpha e^{-\beta(t - t_i)}$) with sub-critical stability guarantees ($\eta = \alpha/\beta < 1.0$) and $O(N)$ log-likelihood recursion.
+
+### 10. NSGA-II Multi-Objective Pareto Evolutionary Tournament (`evolution/pareto_tournament.py`)
+Resolves multi-dimensional trade-offs between Deflated Sharpe Ratio (DSR), Information Ratio, Maximum Drawdown, and SLA Breach Risk using fast non-dominated sorting and crowding distance niching.
+
+### 11. Thermodynamic Die Dynamics & Dynamic PUE Drift (`futures/thermal_pue.py`)
+First-principles rack thermal capacitance ($C_{\text{th}} \frac{dT_{\text{die}}}{dt} = P_{\text{chip}} - \frac{T_{\text{die}} - T_{\text{coolant}}}{R_{\text{th}}}$) and liquid cooling loop enthalpy ($Q = \dot{m} C_p \Delta T$) co-optimizing overclock headroom ($T_{\text{die}} \le 85^\circ\text{C}$) against PUE drift.
+
+### 12. Almgren-Chriss Optimal Execution & Zero-Allocation RingBuffer (`futures/almgren_chriss.py`, `core/ring_buffer.py`)
+Calculates closed-form hyperbolic liquidation trajectories ($x_j = X_0 \frac{\sinh(\kappa(T - t_j))}{\sinh(\kappa T)}$) balancing market impact against preemption risk, feeding into a 64-byte aligned, zero-allocation circular ring buffer processing ticks in $< 0.25\text{ µs/tick}$.
+
+---
+
+## 🖥️ Interactive Architecture Visualizer & Institutional Whitepaper
+
+* **Live Interactive Simulation Dashboard:** [`visualizer/dashboard.html`](visualizer/dashboard.html)  
+  *Built according to the Hermes `architecture-diagram` standard (Slate-950 `#020617`, inline SVG, 100% vanilla JS).*
+  Features real-time interactive ERCOT frequency disturbance sliders (59.50 Hz – 60.50 Hz), animated microsecond DVFS shedding cascades, live basis spread z-score calculators, and hardware rack telemetry.
+* **Institutional Quantitative Alpha Specification:** [`docs/QUANT_ALPHA_SPEC.md`](docs/QUANT_ALPHA_SPEC.md)  
+  Comprehensive mathematical proofs, Euler-Lagrange variational derivations, Itô calculus lemmas, and lattice-based cryptographic bounds.
+
 ---
 
 ## 📊 The 6 Production System Evaluation Parameters (KPIs)

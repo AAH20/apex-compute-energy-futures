@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Compute-Energy Futures | Institutional Quantitative Architecture & Live Visualizer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-slate-950: #020617;
+            --grid-line: #1e293b;
+            --panel-bg: rgba(15, 23, 42, 0.82);
+            --panel-border: rgba(51, 65, 85, 0.65);
+            --panel-border-bright: rgba(100, 116, 139, 0.8);
+            
+            /* Semantic Color System */
+            --cyan-hotpath: #22d3ee;
+            --cyan-glow: rgba(34, 211, 238, 0.35);
+            --emerald-meso: #34d399;
+            --emerald-glow: rgba(52, 211, 153, 0.35);
+            --violet-vault: #a78bfa;
+            --violet-glow: rgba(167, 139, 250, 0.35);
+            --amber-feeds: #fbbf24;
+            --amber-glow: rgba(251, 191, 36, 0.35);
+            --rose-puf: #fb7185;
+            --rose-glow: rgba(251, 113, 133, 0.35);
+            --red-alert: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-slate-950);
+            background-image: 
+                linear-gradient(to right, rgba(30, 41, 59, 0.45) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(30, 41, 59, 0.45) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            padding: 24px;
+            overflow-x: hidden;
+        }
+
+        code, pre, .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Header Navigation & Institutional Badges */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 28px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            backdrop-filter: blur(16px);
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+        }
+
+        .brand-title h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-title p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .system-badges {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
+        }
+
+        .badge-cyan {
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--cyan-hotpath);
+            border-color: rgba(34, 211, 238, 0.3);
+        }
+
+        .badge-emerald {
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--emerald-meso);
+            border-color: rgba(52, 211, 153, 0.3);
+        }
+
+        .badge-violet {
+            background: rgba(167, 139, 250, 0.1);
+            color: var(--violet-vault);
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+
+        .badge-rose {
+            background: rgba(251, 113, 133, 0.1);
+            color: var(--rose-puf);
+            border-color: rgba(251, 113, 133, 0.3);
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: currentColor;
+            animation: pulse-ring 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+        }
+
+        /* Top Simulation & Control Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.25fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 24px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+        }
+
+        .card-header h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header .header-tag {
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-muted);
+        }
+
+        /* Live Frequency Slider & Actuation Deck */
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+
+        .freq-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .freq-unit {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .freq-status-tag {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .status-nominal {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--emerald-meso);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .status-trip {
+            background: rgba(244, 63, 94, 0.2);
+            color: var(--red-alert);
+            border: 1px solid rgba(244, 63, 94, 0.5);
+            animation: flash-border 1s infinite alternate;
+        }
+
+        @keyframes flash-border {
+            0% { box-shadow: 0 0 5px rgba(244, 63, 94, 0.2); }
+            100% { box-shadow: 0 0 15px rgba(244, 63, 94, 0.6); }
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            background: #1e293b;
+            border-radius: 5px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--cyan-hotpath);
+            cursor: pointer;
+            box-shadow: 0 0 12px var(--cyan-hotpath);
+            border: 2px solid #fff;
+        }
+
+        .slider-scale {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 8px;
+        }
+
+        /* Metric Gauge Cards */
+        .metrics-subgrid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .metric-tile {
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 10px;
+            padding: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .tile-cyan::before { background: var(--cyan-hotpath); box-shadow: 0 0 8px var(--cyan-hotpath); }
+        .tile-emerald::before { background: var(--emerald-meso); box-shadow: 0 0 8px var(--emerald-meso); }
+        .tile-amber::before { background: var(--amber-feeds); box-shadow: 0 0 8px var(--amber-feeds); }
+
+        .metric-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .metric-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+        }
+
+        .metric-sub {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Action Buttons */
+        .control-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-trip {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.35);
+        }
+
+        .btn-trip:hover {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(225, 29, 72, 0.5);
+        }
+
+        .btn-reset {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-main);
+            border-color: rgba(71, 85, 105, 0.6);
+        }
+
+        .btn-reset:hover {
+            background: rgba(51, 65, 85, 0.8);
+            border-color: rgba(100, 116, 139, 0.8);
+        }
+
+        /* Basis Spread Calculator Card */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.6);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--emerald-meso);
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.25);
+        }
+
+        .calc-result-box {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+            font-size: 0.8rem;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            padding-top: 10px;
+        }
+
+        .result-key {
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .result-val {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+        }
+
+        .signal-pill {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.05em;
+        }
+
+        .signal-long {
+            background: rgba(52, 211, 153, 0.2);
+            color: var(--emerald-meso);
+            border: 1px solid var(--emerald-meso);
+        }
+
+        .signal-short {
+            background: rgba(244, 63, 94, 0.2);
+            color: var(--red-alert);
+            border: 1px solid var(--red-alert);
+        }
+
+        .signal-hold {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-muted);
+            border: 1px solid var(--text-dim);
+        }
+
+        /* SVG Architecture Visualization Container */
+        .architecture-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .svg-container {
+            width: 100%;
+            height: 520px;
+            position: relative;
+            background: #020617;
+            border-radius: 10px;
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            overflow: hidden;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* SVG Typography & Styling */
+        .svg-tier-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .svg-node-box {
+            fill: #0b1329;
+            stroke-width: 1.5;
+            rx: 8;
+            ry: 8;
+            transition: all 0.3s ease;
+        }
+
+        .svg-node-box:hover {
+            filter: brightness(1.2);
+            cursor: pointer;
+        }
+
+        .svg-node-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            fill: #f8fafc;
+        }
+
+        .svg-node-desc {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            fill: #94a3b8;
+        }
+
+        .svg-flow-path {
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .flow-cyan {
+            stroke: var(--cyan-hotpath);
+            stroke-dasharray: 6 4;
+            animation: dash-flow 1.5s linear infinite;
+        }
+
+        .flow-emerald {
+            stroke: var(--emerald-meso);
+            stroke-dasharray: 6 4;
+            animation: dash-flow 2.5s linear infinite;
+        }
+
+        .flow-violet {
+            stroke: var(--violet-vault);
+            stroke-dasharray: 4 4;
+            animation: dash-flow 3s linear infinite;
+        }
+
+        .flow-amber {
+            stroke: var(--amber-feeds);
+            stroke-dasharray: 5 5;
+            animation: dash-flow 2s linear infinite;
+        }
+
+        .flow-rose {
+            stroke: var(--rose-puf);
+            stroke-dasharray: 5 3;
+            animation: dash-flow 2s linear infinite;
+        }
+
+        @keyframes dash-flow {
+            from { stroke-dashoffset: 20; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Pulse Cascade Trigger Styling */
+        .node-pulsing {
+            animation: node-flash 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes node-flash {
+            0% { stroke-width: 2; filter: drop-shadow(0 0 4px currentColor); }
+            100% { stroke-width: 4; filter: drop-shadow(0 0 16px currentColor); }
+        }
+
+        /* Microsecond Terminal Log */
+        .terminal-panel {
+            background: #020617;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            color: #cbd5e1;
+            height: 160px;
+            overflow-y: auto;
+            margin-top: 16px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .terminal-line {
+            line-height: 1.6;
+            display: flex;
+            gap: 12px;
+        }
+
+        .terminal-time {
+            color: var(--text-dim);
+            user-select: none;
+        }
+
+        .terminal-tag {
+            font-weight: 600;
+        }
+
+        .tag-info { color: var(--cyan-hotpath); }
+        .tag-warn { color: var(--amber-feeds); }
+        .tag-trip { color: var(--red-alert); font-weight: 700; }
+        .tag-ok { color: var(--emerald-meso); }
+
+        /* Hardware Telemetry Table */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(30, 41, 59, 0.6);
+            color: var(--text-muted);
+            padding: 10px 14px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--panel-border);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+            color: #e2e8f0;
+        }
+
+        tr:hover td {
+            background: rgba(30, 41, 59, 0.3);
+        }
+
+        footer {
+            margin-top: 24px;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(51, 65, 85, 0.4);
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Executive Brand Header -->
+    <header>
+        <div class="brand-block">
+            <div class="brand-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+            <div class="brand-title">
+                <h1>APEX COMPUTE-ENERGY FUTURES <span style="font-size: 0.65rem; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 2px 8px; border-radius: 4px;">ENTERPRISE V4.0</span></h1>
+                <p>Autonomous Synthetic Inertia AMM • Microsecond DVFS Shedder • Z3 Invariant Vault</p>
+            </div>
+        </div>
+
+        <div class="system-badges">
+            <div class="badge badge-cyan">
+                <span class="pulse-dot"></span>
+                <span>SUB-10µs HOT-PATH READY</span>
+            </div>
+            <div class="badge badge-emerald">
+                <span>Z3 INVARIANTS: PASS</span>
+            </div>
+            <div class="badge badge-violet">
+                <span>PROOF VAULT: 0x8F9C...E4</span>
+            </div>
+            <div class="badge badge-rose">
+                <span>PUF ANTI-TAMPER: LOCKED</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Top Two-Column Simulation Deck -->
+    <div class="dashboard-grid">
+        
+        <!-- Live Grid Frequency & DVFS Shedding Deck -->
+        <div class="card">
+            <div class="card-header">
+                <h2>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-hotpath)" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Grid Frequency Sensor & Microsecond DVFS Actuator
+                </h2>
+                <span class="header-tag">SCADA 100Hz FEED</span>
+            </div>
+
+            <div class="slider-label-row">
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Observed ERCOT Grid Frequency (f)</span>
+                <span id="freqStatusBadge" class="freq-status-tag status-nominal">NOMINAL 60.00 Hz</span>
+            </div>
+
+            <div class="freq-display">
+                <span id="freqValText">60.000</span>
+                <span class="freq-unit">Hz</span>
+            </div>
+
+            <div class="slider-container">
+                <input type="range" id="freqSlider" min="59.50" max="60.50" step="0.005" value="60.000">
+                <div class="slider-scale">
+                    <span>59.50 Hz (Contingency Trip)</span>
+                    <span>59.85 Hz (UF Threshold)</span>
+                    <span>60.00 Hz (Nominal)</span>
+                    <span>60.15 Hz (OF Threshold)</span>
+                    <span>60.50 Hz (Surplus)</span>
+                </div>
+            </div>
+
+            <div class="metrics-subgrid">
+                <div class="metric-tile tile-cyan">
+                    <div class="metric-title">DVFS Power Shed</div>
+                    <div class="metric-val" id="powerShedText">0.00 <span style="font-size: 0.8rem; color: var(--text-muted);">MW</span></div>
+                    <div class="metric-sub" id="powerShedPct">0.0% of 100 MW Cluster</div>
+                </div>
+                <div class="metric-tile tile-emerald">
+                    <div class="metric-title">Captured Ancillary Rev</div>
+                    <div class="metric-val" id="ancillaryRevText">$0 <span style="font-size: 0.8rem; color: var(--text-muted);">/event</span></div>
+                    <div class="metric-sub" id="ancillaryRateText">$4,500/MWh Trip Peak</div>
+                </div>
+                <div class="metric-tile tile-amber">
+                    <div class="metric-title">GPU Clock Throttle</div>
+                    <div class="metric-val" id="gpuClockText">1,980 <span style="font-size: 0.8rem; color: var(--text-muted);">MHz</span></div>
+                    <div class="metric-sub" id="gpuTempText">Die Temp: 68.2°C</div>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <button id="btnTrip" class="btn btn-trip">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Simulate ERCOT Grid Trip (59.82 Hz)
+                </button>
+                <button id="btnReset" class="btn btn-reset">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    Reset Nominal (60.00 Hz)
+                </button>
+            </div>
+        </div>
+
+        <!-- Basis Spread & Ornstein-Uhlenbeck Alpha Engine -->
+        <div class="card">
+            <div class="card-header">
+                <h2>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--emerald-meso)" stroke-width="2">
+                        <path d="M3 3v18h18"/>
+                        <path d="m19 9-5 5-4-4-3 3"/>
+                    </svg>
+                    Basis Spread & O-U Jump-Diffusion Engine
+                </h2>
+                <span class="header-tag">AR(1) MLE LIVE CALIBRATOR</span>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Forward Price F(t, T) ($/hr):</label>
+                    <input type="number" id="inputFwd" value="2.85" step="0.05">
+                </div>
+                <div class="input-group">
+                    <label>Spot Price S_t ($/hr):</label>
+                    <input type="number" id="inputSpot" value="2.42" step="0.05">
+                </div>
+                <div class="input-group">
+                    <label>Long-Run Mean mu ($/hr):</label>
+                    <input type="number" id="inputMu" value="0.25" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label>Mean Reversion Half-Life (min):</label>
+                    <input type="number" id="inputHalfLife" value="18.5" step="0.5">
+                </div>
+            </div>
+
+            <div class="calc-result-box">
+                <div class="result-row">
+                    <span class="result-key">Basis Spread X_t (F - S):</span>
+                    <span class="result-val" id="resBasisSpread">+0.4300 $/hr</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-key">Reversion Rate theta:</span>
+                    <span class="result-val" id="resTheta">0.0375 min⁻¹</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-key">Normalized Z-Score:</span>
+                    <span class="result-val" id="resZScore">+2.42 sigma</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-key">Mancini Jump Filter:</span>
+                    <span class="result-val" id="resJumpTag" style="color: var(--emerald-meso);">NO JUMP (CONTINUOUS DIFFUSION)</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-key">Optimal Action Signal:</span>
+                    <span id="resActionSignal" class="signal-pill signal-short">SHORT_BASIS (Z >= +2.0)</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 0.72rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">
+                Arbitrage Rule: Short forward compute contracts & buy spot nodes; capture mean-reversion drift over τ₁/₂ = 18.5 min.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Full-Width High-Fidelity SVG Architecture Diagram -->
+    <div class="architecture-panel">
+        <div class="card-header" style="margin-bottom: 12px;">
+            <h2>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--violet-vault)" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                Autonomous Multi-Scale Topography & Dataflow Circuit
+            </h2>
+            <div style="display: flex; gap: 10px; font-size: 0.75rem;">
+                <span style="color: var(--cyan-hotpath);">● Sub-10µs Hot-Path</span>
+                <span style="color: var(--emerald-meso);">● Predictive Meso Engine</span>
+                <span style="color: var(--amber-feeds);">● External Feeds</span>
+                <span style="color: var(--violet-vault);">● Immutable Vault</span>
+                <span style="color: var(--rose-puf);">● PUF Silicon Security</span>
+            </div>
+        </div>
+
+        <div class="svg-container">
+            <svg id="archSvg" viewBox="0 0 1100 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- Linear Gradients for Nodes -->
+                    <linearGradient id="gradHotpath" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#082f49" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#0b1329" stop-opacity="0.95"/>
+                    </linearGradient>
+                    <linearGradient id="gradMeso" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#064e3b" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#0b1329" stop-opacity="0.95"/>
+                    </linearGradient>
+                    <linearGradient id="gradFeeds" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#451a03" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#0b1329" stop-opacity="0.95"/>
+                    </linearGradient>
+                    <linearGradient id="gradVault" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#2e1065" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#0b1329" stop-opacity="0.95"/>
+                    </linearGradient>
+                    <linearGradient id="gradPuf" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#4c0519" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#0b1329" stop-opacity="0.95"/>
+                    </linearGradient>
+
+                    <!-- Arrow Markers -->
+                    <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                        <polygon points="0 0, 8 4, 0 8" fill="var(--cyan-hotpath)"/>
+                    </marker>
+                    <marker id="arrowEmerald" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                        <polygon points="0 0, 8 4, 0 8" fill="var(--emerald-meso)"/>
+                    </marker>
+                    <marker id="arrowAmber" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                        <polygon points="0 0, 8 4, 0 8" fill="var(--amber-feeds)"/>
+                    </marker>
+                    <marker id="arrowViolet" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                        <polygon points="0 0, 8 4, 0 8" fill="var(--violet-vault)"/>
+                    </marker>
+                </defs>
+
+                <!-- Architectural Tiers Background Groups -->
+                <rect x="20" y="20" width="220" height="460" rx="10" fill="rgba(30, 41, 59, 0.2)" stroke="rgba(251, 191, 36, 0.25)" stroke-width="1"/>
+                <text x="35" y="44" class="svg-tier-title" fill="var(--amber-feeds)">Tier 0: Ingestion & Feeds</text>
+
+                <rect x="270" y="20" width="240" height="460" rx="10" fill="rgba(30, 41, 59, 0.2)" stroke="rgba(52, 211, 153, 0.25)" stroke-width="1"/>
+                <text x="285" y="44" class="svg-tier-title" fill="var(--emerald-meso)">Tier 2: Meso Predictive Engine</text>
+
+                <rect x="540" y="20" width="290" height="460" rx="10" fill="rgba(30, 41, 59, 0.25)" stroke="rgba(34, 211, 238, 0.35)" stroke-width="1.2"/>
+                <text x="555" y="44" class="svg-tier-title" fill="var(--cyan-hotpath)">Tier 1: Microsecond Hot-Path Core (&lt;10µs)</text>
+
+                <rect x="860" y="20" width="220" height="460" rx="10" fill="rgba(30, 41, 59, 0.2)" stroke="rgba(167, 139, 250, 0.25)" stroke-width="1"/>
+                <text x="875" y="44" class="svg-tier-title" fill="var(--violet-vault)">Audit & Security Enclave</text>
+
+                <!-- NODES: TIER 0 (FEEDS - AMBER) -->
+                <g id="nodeScada" transform="translate(35, 65)">
+                    <rect width="190" height="75" class="svg-node-box" fill="url(#gradFeeds)" stroke="var(--amber-feeds)"/>
+                    <text x="14" y="26" class="svg-node-title">ERCOT / PJM SCADA</text>
+                    <text x="14" y="44" class="svg-node-desc">Frequency 60.00 Hz (10ms)</text>
+                    <text x="14" y="60" class="svg-node-desc">LMP Substation Bus RT</text>
+                </g>
+
+                <g id="nodeL3" transform="translate(35, 175)">
+                    <rect width="190" height="75" class="svg-node-box" fill="url(#gradFeeds)" stroke="var(--amber-feeds)"/>
+                    <text x="14" y="26" class="svg-node-title">GPU Spot Market L3</text>
+                    <text x="14" y="44" class="svg-node-desc">vast.ai / RunPod Websocket</text>
+                    <text x="14" y="60" class="svg-node-desc">Depth: Bids, Asks, Leases</text>
+                </g>
+
+                <g id="nodeFerc" transform="translate(35, 285)">
+                    <rect width="190" height="75" class="svg-node-box" fill="url(#gradFeeds)" stroke="var(--amber-feeds)"/>
+                    <text x="14" y="26" class="svg-node-title">Macro Energy & FERC</text>
+                    <text x="14" y="44" class="svg-node-desc">Henry Hub NatGas Futures</text>
+                    <text x="14" y="60" class="svg-node-desc">TSMC Semi Book-to-Bill</text>
+                </g>
+
+                <g id="nodeDcim" transform="translate(35, 395)">
+                    <rect width="190" height="70" class="svg-node-box" fill="url(#gradFeeds)" stroke="var(--amber-feeds)"/>
+                    <text x="14" y="24" class="svg-node-title">Datacenter DCIM/BMS</text>
+                    <text x="14" y="42" class="svg-node-desc">BACnet/Modbus Liquid Loop</text>
+                    <text x="14" y="56" class="svg-node-desc">Coolant In/Out Temp & Flow</text>
+                </g>
+
+                <!-- NODES: TIER 2 (MESO - EMERALD) -->
+                <g id="nodeForwardCurve" transform="translate(285, 80)">
+                    <rect width="210" height="85" class="svg-node-box" fill="url(#gradMeso)" stroke="var(--emerald-meso)"/>
+                    <text x="14" y="24" class="svg-node-title">Cost-of-Carry Forward</text>
+                    <text x="14" y="42" class="svg-node-desc">F(t,T) = S_t * exp((r+c-y)T)</text>
+                    <text x="14" y="58" class="svg-node-desc">Combinatorial Strips (1-24h)</text>
+                    <text x="14" y="74" class="svg-node-desc">Clearance Matrix P_clear</text>
+                </g>
+
+                <g id="nodeOu" transform="translate(285, 205)">
+                    <rect width="210" height="85" class="svg-node-box" fill="url(#gradMeso)" stroke="var(--emerald-meso)"/>
+                    <text x="14" y="24" class="svg-node-title">O-U Jump Diffusion MLE</text>
+                    <text x="14" y="42" class="svg-node-desc">dX = theta(mu - X)dt + sigma dW</text>
+                    <text x="14" y="58" class="svg-node-desc">Mancini Jump Threshold</text>
+                    <text x="14" y="74" class="svg-node-desc">Tau_1/2 = ln(2)/theta</text>
+                </g>
+
+                <g id="nodeHawkes" transform="translate(285, 330)">
+                    <rect width="210" height="85" class="svg-node-box" fill="url(#gradMeso)" stroke="var(--emerald-meso)"/>
+                    <text x="14" y="24" class="svg-node-title">Hawkes Point Process</text>
+                    <text x="14" y="42" class="svg-node-desc">lambda(t) = mu_0 + sum(alpha*e^-beta)</text>
+                    <text x="14" y="58" class="svg-node-desc">Branching Ratio: eta = alpha/beta &lt; 0.85</text>
+                    <text x="14" y="74" class="svg-node-desc">Ogata Thinning Cascade Sim</text>
+                </g>
+
+                <!-- NODES: TIER 1 (HOT-PATH - CYAN) -->
+                <g id="nodeRingBuffer" transform="translate(560, 65)">
+                    <rect width="250" height="75" class="svg-node-box" fill="url(#gradHotpath)" stroke="var(--cyan-hotpath)"/>
+                    <text x="14" y="24" class="svg-node-title">Lock-Free SPSC Ring Buffer</text>
+                    <text x="14" y="42" class="svg-node-desc">64-Byte Cache Line Padded (No False Share)</text>
+                    <text x="14" y="58" class="svg-node-desc">Sub-15ns Acquire-Release Semantics</text>
+                </g>
+
+                <g id="nodeActionGate" transform="translate(560, 165)">
+                    <rect width="250" height="85" class="svg-node-box" fill="url(#gradHotpath)" stroke="var(--cyan-hotpath)"/>
+                    <text x="14" y="24" class="svg-node-title">Deterministic ActionGate</text>
+                    <text x="14" y="42" class="svg-node-desc">&lt;10µs Local Boundary Evaluation</text>
+                    <text x="14" y="58" class="svg-node-desc">P_spot &lt; P_clear AND Host in HealthySet</text>
+                    <text x="14" y="74" class="svg-node-desc">Zero Heap Alloc / Zero I/O Wait</text>
+                </g>
+
+                <g id="nodeDvfs" transform="translate(560, 275)">
+                    <rect width="250" height="80" class="svg-node-box" fill="url(#gradHotpath)" stroke="var(--cyan-hotpath)"/>
+                    <text x="14" y="24" class="svg-node-title">DVFS Sub-2ms Power Shedder</text>
+                    <text x="14" y="42" class="svg-node-desc">P_compute ~ f_clk^2.85 Dynamic Law</text>
+                    <text x="14" y="58" class="svg-node-desc">Inertia Droop: Delta C = G_droop * Delta f</text>
+                    <text x="14" y="72" class="svg-node-desc">Captures $4,500/MWh Reserve Revenue</text>
+                </g>
+
+                <g id="nodeAlmgren" transform="translate(560, 380)">
+                    <rect width="250" height="80" class="svg-node-box" fill="url(#gradHotpath)" stroke="var(--cyan-hotpath)"/>
+                    <text x="14" y="24" class="svg-node-title">Almgren-Chriss Hyperbolic Exec</text>
+                    <text x="14" y="42" class="svg-node-desc">x(t) = X_0 * sinh(kappa(T-t)) / sinh(kappa T)</text>
+                    <text x="14" y="58" class="svg-node-desc">kappa = sqrt(lambda * sigma^2 / eta)</text>
+                    <text x="14" y="72" class="svg-node-desc">Optimal Liquidation Shortfall Minimizer</text>
+                </g>
+
+                <!-- NODES: VAULT & PUF (VIOLET & ROSE) -->
+                <g id="nodeZ3" transform="translate(875, 80)">
+                    <rect width="190" height="90" class="svg-node-box" fill="url(#gradVault)" stroke="var(--violet-vault)"/>
+                    <text x="14" y="24" class="svg-node-title">Formal Z3 SMT Guard</text>
+                    <text x="14" y="42" class="svg-node-desc">Mathematical Proof Engine</text>
+                    <text x="14" y="58" class="svg-node-desc">Balance &gt; Basel Floor</text>
+                    <text x="14" y="74" class="svg-node-desc">Power &lt; Breaker * 0.80</text>
+                </g>
+
+                <g id="nodePuf" transform="translate(875, 215)">
+                    <rect width="190" height="85" class="svg-node-box" fill="url(#gradPuf)" stroke="var(--rose-puf)"/>
+                    <text x="14" y="24" class="svg-node-title">PUF Silicon Anti-Tamper</text>
+                    <text x="14" y="42" class="svg-node-desc">Physically Unclonable Fn</text>
+                    <text x="14" y="58" class="svg-node-desc">Hardware Root-of-Trust</text>
+                    <text x="14" y="74" class="svg-node-desc">Anti-RE Dynamic Keys</text>
+                </g>
+
+                <g id="nodeVault" transform="translate(875, 345)">
+                    <rect width="190" height="90" class="svg-node-box" fill="url(#gradVault)" stroke="var(--violet-vault)"/>
+                    <text x="14" y="24" class="svg-node-title">Immutable SHA-256 Vault</text>
+                    <text x="14" y="42" class="svg-node-desc">Cryptographic Audit Trail</text>
+                    <text x="14" y="58" class="svg-node-desc">a2zsoc.com Attestation</text>
+                    <text x="14" y="74" class="svg-node-desc">Zero-Snoop Proof Log</text>
+                </g>
+
+                <!-- CONNECTING FLOW PATHS (ANIMATED) -->
+                <!-- Feed to Meso -->
+                <path d="M 225 102 L 285 102" class="svg-flow-path flow-amber" marker-end="url(#arrowAmber)"/>
+                <path d="M 225 212 L 285 247" class="svg-flow-path flow-amber" marker-end="url(#arrowAmber)"/>
+                <path d="M 225 212 L 285 372" class="svg-flow-path flow-amber" marker-end="url(#arrowAmber)"/>
+
+                <!-- Feed directly to Hot-Path (SCADA to RingBuffer) -->
+                <path id="pathScadaToRing" d="M 225 102 Q 392 40 560 85" class="svg-flow-path flow-cyan" marker-end="url(#arrowCyan)"/>
+
+                <!-- Meso to Hot-Path -->
+                <path d="M 495 122 L 560 185" class="svg-flow-path flow-emerald" marker-end="url(#arrowEmerald)"/>
+                <path d="M 495 247 L 560 205" class="svg-flow-path flow-emerald" marker-end="url(#arrowEmerald)"/>
+
+                <!-- Internal Hot-Path Cascades -->
+                <path id="pathRingToAction" d="M 685 140 L 685 165" class="svg-flow-path flow-cyan" marker-end="url(#arrowCyan)"/>
+                <path id="pathActionToDvfs" d="M 685 250 L 685 275" class="svg-flow-path flow-cyan" marker-end="url(#arrowCyan)"/>
+                <path id="pathActionToAlmgren" d="M 810 207 Q 835 300 810 400" class="svg-flow-path flow-cyan" marker-end="url(#arrowCyan)"/>
+
+                <!-- Hot-Path to Z3 Guard and Vault -->
+                <path id="pathActionToZ3" d="M 810 185 L 875 125" class="svg-flow-path flow-violet" marker-end="url(#arrowViolet)"/>
+                <path id="pathZ3ToPuf" d="M 970 170 L 970 215" class="svg-flow-path flow-rose"/>
+                <path id="pathPufToVault" d="M 970 300 L 970 345" class="svg-flow-path flow-violet" marker-end="url(#arrowViolet)"/>
+            </svg>
+        </div>
+
+        <!-- Microsecond Real-Time Terminal Output -->
+        <div class="terminal-panel" id="terminalLog">
+            <div class="terminal-line"><span class="terminal-time">[00:00:00.000000]</span> <span class="terminal-tag tag-info">[CORE_INIT]</span> Apex Compute-Energy Futures v4.0 initialized. Memory barriers aligned to 64B cache boundaries.</div>
+            <div class="terminal-line"><span class="terminal-time">[00:00:00.000125]</span> <span class="terminal-tag tag-ok">[Z3_GUARD]</span> Formal safety invariants verified: CapitalFloor=OK, BreakerCap=OK, ZeroDoubleAlloc=OK.</div>
+            <div class="terminal-line"><span class="terminal-time">[00:00:00.000350]</span> <span class="terminal-tag tag-info">[FEED_CONN]</span> Substation SCADA 100Hz frequency feed active. Nominal frequency: 60.000 Hz.</div>
+            <div class="terminal-line"><span class="terminal-time">[00:00:00.000500]</span> <span class="terminal-tag tag-info">[ACTION_GATE]</span> Deterministic Fast-Path armed (&lt;10µs budget). Ready for streaming arbitrage.</div>
+        </div>
+    </div>
+
+    <!-- Live Cluster Telemetry Table -->
+    <div class="card">
+        <div class="card-header">
+            <h2>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber-feeds)" stroke-width="2">
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                    <line x1="6" y1="6" x2="6.01" y2="6"/>
+                    <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                Cluster Node Hardware Telemetry & Fast-Path Breakers
+            </h2>
+            <span class="header-tag">100 MW HYPERSCALE POD</span>
+        </div>
+
+        <div class="table-container">
+            <table id="telemetryTable">
+                <thead>
+                    <tr>
+                        <th>Node Identifier</th>
+                        <th>GPU Spec</th>
+                        <th>Clock Rate</th>
+                        <th>Power Draw</th>
+                        <th>Junction Temp</th>
+                        <th>eBPF Jitter</th>
+                        <th>DVFS Shedding Mode</th>
+                        <th>Z3 Invariant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="rowNode1">
+                        <td style="color: var(--cyan-hotpath); font-weight: 600;">node-tx-h100-01</td>
+                        <td>8x H100 SXM5 (80GB)</td>
+                        <td class="col-clock">1,980 MHz</td>
+                        <td class="col-power">5,600 W</td>
+                        <td class="col-temp">68.2°C</td>
+                        <td>0.12 ms</td>
+                        <td class="col-mode" style="color: var(--emerald-meso);">NOMINAL (100%)</td>
+                        <td style="color: var(--emerald-meso);">PROVED (Z3)</td>
+                    </tr>
+                    <tr id="rowNode2">
+                        <td style="color: var(--cyan-hotpath); font-weight: 600;">node-tx-h100-02</td>
+                        <td>8x H100 SXM5 (80GB)</td>
+                        <td class="col-clock">1,980 MHz</td>
+                        <td class="col-power">5,580 W</td>
+                        <td class="col-temp">67.9°C</td>
+                        <td>0.14 ms</td>
+                        <td class="col-mode" style="color: var(--emerald-meso);">NOMINAL (100%)</td>
+                        <td style="color: var(--emerald-meso);">PROVED (Z3)</td>
+                    </tr>
+                    <tr id="rowNode3">
+                        <td style="color: var(--cyan-hotpath); font-weight: 600;">node-tx-b200-01</td>
+                        <td>8x B200 HGX (192GB)</td>
+                        <td class="col-clock">2,100 MHz</td>
+                        <td class="col-power">8,000 W</td>
+                        <td class="col-temp">71.4°C</td>
+                        <td>0.09 ms</td>
+                        <td class="col-mode" style="color: var(--emerald-meso);">NOMINAL (100%)</td>
+                        <td style="color: var(--emerald-meso);">PROVED (Z3)</td>
+                    </tr>
+                    <tr id="rowNode4">
+                        <td style="color: var(--cyan-hotpath); font-weight: 600;">node-tx-b200-02</td>
+                        <td>8x B200 HGX (192GB)</td>
+                        <td class="col-clock">2,100 MHz</td>
+                        <td class="col-power">7,950 W</td>
+                        <td class="col-temp">70.8°C</td>
+                        <td>0.11 ms</td>
+                        <td class="col-mode" style="color: var(--emerald-meso);">NOMINAL (100%)</td>
+                        <td style="color: var(--emerald-meso);">PROVED (Z3)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Institutional Footer -->
+    <footer>
+        <div>
+            Apex Growth Systems LLC • Institutional Computational Infrastructure • ACC 25121151
+        </div>
+        <div>
+            Licensed Commercial Engine • Contact: <a href="mailto:aah@a2zsoc.com" style="color: var(--cyan-hotpath); text-decoration: none;">aah@a2zsoc.com</a> • W-8BEN-E Verified
+        </div>
+    </footer>
+
+    <!-- Interactive Simulation & Actuation Logic (Pure Vanilla JavaScript) -->
+    <script>
+        (function() {
+            // DOM Elements
+            const freqSlider = document.getElementById('freqSlider');
+            const freqValText = document.getElementById('freqValText');
+            const freqStatusBadge = document.getElementById('freqStatusBadge');
+            const powerShedText = document.getElementById('powerShedText');
+            const powerShedPct = document.getElementById('powerShedPct');
+            const ancillaryRevText = document.getElementById('ancillaryRevText');
+            const ancillaryRateText = document.getElementById('ancillaryRateText');
+            const gpuClockText = document.getElementById('gpuClockText');
+            const gpuTempText = document.getElementById('gpuTempText');
+            const btnTrip = document.getElementById('btnTrip');
+            const btnReset = document.getElementById('btnReset');
+            const terminalLog = document.getElementById('terminalLog');
+
+            // Basis Spread Inputs
+            const inputFwd = document.getElementById('inputFwd');
+            const inputSpot = document.getElementById('inputSpot');
+            const inputMu = document.getElementById('inputMu');
+            const inputHalfLife = document.getElementById('inputHalfLife');
+            const resBasisSpread = document.getElementById('resBasisSpread');
+            const resTheta = document.getElementById('resTheta');
+            const resZScore = document.getElementById('resZScore');
+            const resJumpTag = document.getElementById('resJumpTag');
+            const resActionSignal = document.getElementById('resActionSignal');
+
+            // SVG Nodes for cascade animation
+            const svgNodes = {
+                scada: document.getElementById('nodeScada'),
+                ring: document.getElementById('nodeRingBuffer'),
+                action: document.getElementById('nodeActionGate'),
+                dvfs: document.getElementById('nodeDvfs'),
+                z3: document.getElementById('nodeZ3'),
+                vault: document.getElementById('nodeVault')
+            };
+
+            // System Constant Parameters
+            const NOMINAL_FREQ = 60.000;
+            const CLUSTER_MW_CAPACITY = 100.0; // 100 MW Datacenter Cluster
+            const DROOP_GOVERNOR_GAIN = 25.0;  // 4% droop -> gain = 25
+            const BASE_CLOCK_MHZ = 1980;
+            const BASE_DIE_TEMP = 68.2;
+            const TRIP_ANCILLARY_RATE = 4500.0; // $4,500 / MWh ERCOT Ancillary Emergency Clearing
+
+            function appendLog(tag, tagClass, message) {
+                const now = new Date();
+                const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0') + '000';
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.innerHTML = `<span class="terminal-time">[${timeStr}]</span> <span class="terminal-tag ${tagClass}">[${tag}]</span> ${message}`;
+                terminalLog.appendChild(line);
+                terminalLog.scrollTop = terminalLog.scrollHeight;
+            }
+
+            function updateGridSimulation(freq) {
+                freqValText.textContent = freq.toFixed(3);
+                const deltaF = freq - NOMINAL_FREQ;
+
+                let shedMw = 0;
+                let shedPct = 0;
+                let ancillaryRev = 0;
+                let newClock = BASE_CLOCK_MHZ;
+                let newTemp = BASE_DIE_TEMP;
+
+                if (deltaF < -0.015) {
+                    // Under-frequency event -> shed compute power to inject synthetic inertia
+                    const underFreqDeviation = Math.abs(deltaF);
+                    // Droop formulation: Delta C = C_0 * (Delta f / f_0) * DroopGain
+                    shedMw = Math.min(CLUSTER_MW_CAPACITY * 0.70, (underFreqDeviation / NOMINAL_FREQ) * DROOP_GOVERNOR_GAIN * CLUSTER_MW_CAPACITY);
+                    shedPct = (shedMw / CLUSTER_MW_CAPACITY) * 100;
+                    
+                    // Ancillary revenue captured = shedMw * (duration 15min = 0.25h) * clearing price
+                    ancillaryRev = Math.round(shedMw * 0.25 * TRIP_ANCILLARY_RATE);
+
+                    // Dynamic frequency scaling law: P ~ f^2.85 => f ~ P^(1/2.85)
+                    const powerRemainingRatio = Math.max(0.30, 1.0 - (shedMw / CLUSTER_MW_CAPACITY));
+                    const clockScaling = Math.pow(powerRemainingRatio, 1 / 2.85);
+                    newClock = Math.round(BASE_CLOCK_MHZ * clockScaling);
+                    newTemp = (BASE_DIE_TEMP - (shedPct * 0.22)).toFixed(1);
+
+                    if (freq <= 59.85) {
+                        freqStatusBadge.className = 'freq-status-tag status-trip';
+                        freqStatusBadge.textContent = `CRITICAL UNDER-FREQ TRIP (${freq.toFixed(2)} Hz)`;
+                    } else {
+                        freqStatusBadge.className = 'freq-status-tag status-trip';
+                        freqStatusBadge.textContent = `UNDER-FREQ INERTIA RESPONSE (${freq.toFixed(2)} Hz)`;
+                    }
+                } else if (deltaF > 0.05) {
+                    freqStatusBadge.className = 'freq-status-tag status-nominal';
+                    freqStatusBadge.textContent = `OVER-FREQ CURTAILMENT (${freq.toFixed(2)} Hz)`;
+                } else {
+                    freqStatusBadge.className = 'freq-status-tag status-nominal';
+                    freqStatusBadge.textContent = `NOMINAL STABLE (60.00 Hz)`;
+                }
+
+                // Render metrics
+                powerShedText.innerHTML = `${shedMw.toFixed(2)} <span style="font-size: 0.8rem; color: var(--text-muted);">MW</span>`;
+                powerShedPct.textContent = `${shedPct.toFixed(1)}% of 100 MW Cluster`;
+                ancillaryRevText.innerHTML = `$${ancillaryRev.toLocaleString()} <span style="font-size: 0.8rem; color: var(--text-muted);">/event</span>`;
+                gpuClockText.innerHTML = `${newClock} <span style="font-size: 0.8rem; color: var(--text-muted);">MHz</span>`;
+                gpuTempText.textContent = `Die Temp: ${newTemp}°C`;
+
+                // Update Table Rows
+                const rows = document.querySelectorAll('#telemetryTable tbody tr');
+                rows.forEach((row, idx) => {
+                    const colClock = row.querySelector('.col-clock');
+                    const colPower = row.querySelector('.col-power');
+                    const colTemp = row.querySelector('.col-temp');
+                    const colMode = row.querySelector('.col-mode');
+
+                    const nodeBaseClock = idx >= 2 ? 2100 : 1980;
+                    const nodeBasePower = idx >= 2 ? 8000 : 5600;
+
+                    const curClock = Math.round(nodeBaseClock * (newClock / BASE_CLOCK_MHZ));
+                    const curPower = Math.round(nodeBasePower * (1 - shedPct / 100));
+
+                    colClock.textContent = `${curClock} MHz`;
+                    colPower.textContent = `${curPower.toLocaleString()} W`;
+                    colTemp.textContent = `${newTemp}°C`;
+
+                    if (shedPct > 5) {
+                        colMode.textContent = `DVFS SHEDDING (-${shedPct.toFixed(0)}%)`;
+                        colMode.style.color = 'var(--cyan-hotpath)';
+                    } else {
+                        colMode.textContent = `NOMINAL (100%)`;
+                        colMode.style.color = 'var(--emerald-meso)';
+                    }
+                });
+            }
+
+            // Real-time Slider Handler
+            freqSlider.addEventListener('input', function(e) {
+                const freq = parseFloat(e.target.value);
+                updateGridSimulation(freq);
+            });
+
+            // Trigger ERCOT Trip Button Handler with Animated Cascade
+            btnTrip.addEventListener('click', function() {
+                freqSlider.value = 59.820;
+                updateGridSimulation(59.820);
+
+                appendLog('GRID_TRIP', 'tag-trip', 'ALERT: ERCOT Under-Frequency trip detected at 59.820 Hz! dF/dt = -0.14 Hz/s.');
+
+                // Sequential Animated Cascade through SVG Architecture
+                const sequence = [
+                    { node: svgNodes.scada, delay: 50, tag: 'SCADA_ALERT', class: 'tag-warn', msg: 'Substation SCADA triggers contingency flag. Emitting to Ring Buffer.' },
+                    { node: svgNodes.ring, delay: 200, tag: 'RING_BUFFER', class: 'tag-info', msg: 'Telemetry enqueued in sub-15ns lock-free ring. Acquire-barrier confirmed.' },
+                    { node: svgNodes.action, delay: 450, tag: 'ACTION_GATE', class: 'tag-info', msg: 'Deterministic ActionGate executes fast-path boundary in 4.2µs. Trip approved.' },
+                    { node: svgNodes.dvfs, delay: 750, tag: 'DVFS_ACTUATE', class: 'tag-trip', msg: 'Dynamic clock throttled: Shedding 24.3 MW in <2ms! Injected synthetic inertia.' },
+                    { node: svgNodes.z3, delay: 1100, tag: 'Z3_VERIFIED', class: 'tag-ok', msg: 'SMT Invariant Proven: Breaker boundary respected. Thermal headroom preserved.' },
+                    { node: svgNodes.vault, delay: 1400, tag: 'AUDIT_VAULT', class: 'tag-ok', msg: 'Immutable SHA-256 evidence record anchored: 0x9a3e21...f7. $27,338 captured.' }
+                ];
+
+                sequence.forEach(step => {
+                    setTimeout(() => {
+                        if (step.node) {
+                            step.node.classList.add('node-pulsing');
+                            setTimeout(() => step.node.classList.remove('node-pulsing'), 1200);
+                        }
+                        appendLog(step.tag, step.class, step.msg);
+                    }, step.delay);
+                });
+            });
+
+            // Reset Button Handler
+            btnReset.addEventListener('click', function() {
+                freqSlider.value = 60.000;
+                updateGridSimulation(60.000);
+                appendLog('GRID_RESET', 'tag-ok', 'Grid frequency stabilized to nominal 60.000 Hz. GPU clocks restored to full base throttle.');
+            });
+
+            // Basis Spread & O-U Calculator Logic
+            function updateBasisCalculation() {
+                const F = parseFloat(inputFwd.value) || 0;
+                const S = parseFloat(inputSpot.value) || 0;
+                const mu = parseFloat(inputMu.value) || 0;
+                const halfLifeMin = parseFloat(inputHalfLife.value) || 1;
+
+                const basis = F - S;
+                const theta = Math.log(2) / halfLifeMin;
+                
+                // Empirical standard deviation of spread for demo z-score
+                const sigmaSpread = 0.075;
+                const zScore = (basis - mu) / sigmaSpread;
+
+                resBasisSpread.textContent = `${basis >= 0 ? '+' : ''}${basis.toFixed(4)} $/hr`;
+                resTheta.textContent = `${theta.toFixed(4)} min⁻¹`;
+                resZScore.textContent = `${zScore >= 0 ? '+' : ''}${zScore.toFixed(2)} sigma`;
+
+                // Mancini Jump Detection Threshold
+                if (Math.abs(basis - mu) > 0.40) {
+                    resJumpTag.textContent = 'DISCONTINUOUS JUMP DETECTED (|r_i| > nu*dt^varpi)';
+                    resJumpTag.style.color = 'var(--red-alert)';
+                } else {
+                    resJumpTag.textContent = 'NO JUMP (CONTINUOUS GAUSSIAN DIFFUSION)';
+                    resJumpTag.style.color = 'var(--emerald-meso)';
+                }
+
+                // Trading Action Signal
+                if (zScore >= 2.0) {
+                    resActionSignal.className = 'signal-pill signal-short';
+                    resActionSignal.textContent = 'SHORT_BASIS (Z >= +2.0)';
+                } else if (zScore <= -2.0) {
+                    resActionSignal.className = 'signal-pill signal-long';
+                    resActionSignal.textContent = 'LONG_BASIS (Z <= -2.0)';
+                } else if (Math.abs(zScore) <= 0.5) {
+                    resActionSignal.className = 'signal-pill signal-hold';
+                    resActionSignal.textContent = 'UNWIND / TARGET REACHED';
+                } else {
+                    resActionSignal.className = 'signal-pill signal-hold';
+                    resActionSignal.textContent = 'HOLD POSITION';
+                }
+            }
+
+            [inputFwd, inputSpot, inputMu, inputHalfLife].forEach(el => {
+                el.addEventListener('input', updateBasisCalculation);
+            });
+
+            // Initial Runs
+            updateGridSimulation(60.000);
+            updateBasisCalculation();
+
+        })();
+    </script>
+</body>
+</html>
