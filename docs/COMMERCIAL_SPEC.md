@@ -60,7 +60,7 @@ SKU CODE              TIER NAME                   PRICE               BILLING CA
 ---
 
 ## 4. Contact & Inquiries
-* **Enterprise Licensing & Custom Private Offers:** `sales@a2zsoc.com`
+* **Enterprise Licensing & Custom Private Offers:** `aah@a2zsoc.com`
 * **Technical Inquiries:** `aah@a2zsoc.com`
 * **Entity:** Apex Growth Systems LLC, Arizona, USA.
 * **Web:** [https://a2zsoc.com](https://a2zsoc.com)

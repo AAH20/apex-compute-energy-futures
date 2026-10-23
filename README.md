@@ -216,7 +216,7 @@ The Enterprise Platform is distributed via the **AWS Marketplace** under **Apex 
 * **100% AWS EDP Drawdown:** Enterprise buyers burn mandatory committed cloud spend with zero new procurement cycles.
 * **NVIDIA Inception Member:** Qualified startup portfolio architecture.
 * **US Entity:** Apex Growth Systems LLC (Arizona, USA).
-* **Enterprise Licensing Inquiries:** `sales@a2zsoc.com` | [https://a2zsoc.com](https://a2zsoc.com)
+* **Enterprise Licensing Inquiries:** `aah@a2zsoc.com` | [https://a2zsoc.com](https://a2zsoc.com)
 
 ---
 

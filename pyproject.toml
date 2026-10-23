@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [
-    {name = "Apex Growth Systems LLC", email = "sales@a2zsoc.com"}
+    {name = "Apex Growth Systems LLC", email = "aah@a2zsoc.com"}
 ]
 keywords = [
     "datacenter",
