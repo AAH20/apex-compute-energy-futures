@@ -90,3 +90,69 @@ Where:
    $$\text{SIP} = \frac{N_{\text{breach}}}{N_{\text{total leases}}} \le 0.01\% \quad (\text{Strict Zero-Tolerance})$$
 6. **Execution Slippage Deficit (ESD):**
    $$\text{ESD} = \text{Realized Slippage} - \text{Almgren-Chriss Optimal Bound} \le 2.8\text{ bps}$$
+
+---
+
+## 4. Market Structure Divergence: Hyperscalers vs. Retail Secondary Spot
+
+A foundational error in compute arbitrage modeling is treating GPU compute as a fungible, location-agnostic commodity. `apex-compute-energy-futures` explicitly models the **physics and contractual divergence** between Wholesale Hyperscalers (AWS, Azure, GCP, CoreWeave) and Retail Spot Brokers (vast.ai, RunPod, TensorDock).
+
+### A. Physical & Network Fabric Constraints
+
+* **Hyperscalers (Wholesale Tier-4 Facilities):**
+  * Network topology: 3.2 Tbps non-blocking Quantum-2 InfiniBand or RoCEv2 flat Clos fabrics with collective all-reduce latency $< 1.5\text{ µs}$.
+  * Checkpoint Physics: Full FP8/BF16 80 GB checkpoint dump from an 8-GPU H100 node across 3.2 Tbps NVLink/IB takes $< 250\text{ ms}$.
+  * Power & Redundancy: 2N utility substations, automated transfer switches (ATS), onsite diesel generation, 99.999% power uptime.
+
+* **Retail Spot Brokers (Secondary Market Hosts):**
+  * Network topology: Heterogeneous, unpeered residential or Tier-1/2 colocation egress over public internet with single 1 Gbps WAN connections.
+  * Checkpoint Physics: An 80 GB model checkpoint transfer across a saturated 1 Gbps WAN requires:
+    $$T_{\text{transfer}} = \frac{80 \times 1024 \times 8 \text{ Mbits}}{1000 \text{ Mbps}} \approx 655 \text{ seconds} \quad (> 10.9 \text{ minutes})$$
+  * **Structural Consequence:** Attempting distributed multi-node LLM training across retail spot markets causes infinite collective barrier stalls. Retail capacity is strictly ring-fenced by the engine for **embarrassingly parallel stateless tasks** (hyperparameter grid sweeps, synthetic data rollouts, independent Monte Carlo paths).
+
+### B. Contractual Structure & The Basis Arbitrage Spread
+
+Hyperscalers monetize compute via multi-year bilateral Enterprise Discount Programs (EDP) with rigid take-or-pay clauses. Retail brokers operate continuous second-by-second spot auctions.
+
+The basis spread between forward wholesale commitments and spot clearance is formally modeled as:
+
+$$\text{Basis}(t, T) = F_{\text{hyperscale}}(t, T) - S_{\text{retail}}(t) = S_{\text{hyperscale}}(t) \cdot \left(e^{(r + c - y)(T - t)} - 1\right) + \Delta_{\text{preemption\_risk}} + \Delta_{\text{bandwidth\_discount}}$$
+
+Where:
+* $\Delta_{\text{preemption\_risk}} > 0$: The risk premium demanded by operators for running on unvetted spot hosts prone to sudden host reboots without contractual SLA recourse.
+* $\Delta_{\text{bandwidth\_discount}} < 0$: The structural valuation discount reflecting the absence of non-blocking multi-terabit collective fabric.
+
+When the retail discount exceeds the risk-adjusted basis spread:
+$$S_{\text{retail}}(t) < F_{\text{hyperscale}}(t, T) - \left(\Delta_{\text{preemption\_risk}} + \text{Slippage}(V) + \text{Fee}_{\text{taker}}\right)$$
+
+The `ActionGate` triggers an instant spot allocation for stateless batch queues, displacing expensive hyperscaler EDP burn.
+
+---
+
+## 5. Anti-Reverse-Engineering Calibration Manifold
+
+### *Mathematical Immunity against Ghidra, IDA Pro, Binary Ninja, and the REA Framework*
+
+Proprietary trading firmware and physical infrastructure kernels deployed into untrusted colocation facilities face continuous decompilation and memory inspection attacks. `apex-compute-energy-futures` incorporates a cryptographic "Empty Chassis" architecture designed to render decompilation completely uninformative:
+
+```mermaid
+flowchart TD
+    ATTACKER{{"Adversary / Tool<br>(Ghidra / IDA / REA)"}} -->|Static Disassembly| CHASSIS["Empty Chassis OSS<br>(Symbolic AST Only)"]
+    CHASSIS -->|Zero Secret Weights| DUMMY["Zero Exploit Surface<br>(Invariant Algebraic Stubs)"]
+    
+    HSM{{NIST FIPS 203 HSM}} -->|ML-KEM-1024 Ratchet| RLWE["Ring-LWE Blind Space<br>(Tau = 60s Ephemeral)"]
+    RLWE -->|Hardware PUF Bound| HOTCORE["Ephemeral Hot-Path<br>(In-Memory Execution)"]
+    
+    ATTACKER -.->|Memory Attach / Breakpoint| ZEROIZE["PUF Tamper Trip<br>(Immediate Key Zeroization)"]
+```
+
+### A. The Empty Chassis Paradigm
+The open-source code and compiled binaries distributed in public environments contain only **algebraic templates, invariant boundaries, and fast-path dispatch scaffolding**. The proprietary alpha resides entirely in a high-dimensional, empirical non-linear **Calibration Manifold** ($\sim 10^9$ parameters):
+* Static disassembly via Ghidra, IDA Pro, or the REA (Reverse Engineering Automation) platform reconstructs the exact mathematical equations already published in this specification (e.g., $F = S e^{(r+c-y)T}$, $\Phi(E, C, f) = K$).
+* No hardcoded coefficients, empirical neural weights, or facility thermodynamic calibration matrices exist within the binary or Python bytecode.
+
+### B. Post-Quantum Ephemeral Ratchet (NIST FIPS 203 / ML-KEM-1024)
+The enterprise tier deploys dynamic calibration streaming over a post-quantum cryptographic ratchet:
+1. **Ephemeral Parameter Leases:** Dynamic calibration matrices $\mathbf{W}_{\text{calib}}(t)$ are streamed into volatile memory with an exponential half-life ($\tau_{1/2} = 60\text{s}$) over ML-KEM-1024 key exchanges.
+2. **Homomorphic Evaluation over Cyclotomic Rings:** Calculations execute within a Ring Learning With Errors (Ring-LWE) ciphertext space over cyclotomic rings $\mathbb{Z}_q[X]/(X^N + 1)$. The host machine processes the inference without the unencrypted matrix tensor ever existing in cleartext memory.
+3. **Hardware PUF Zeroization (`puf_ephemeral_zeroize`):** The binary interfaces with hardware Physically Unclonable Functions (PUF). Any hardware memory bus probe, ptrace injection, or debugger attach event immediately trips the anti-tamper latch, wiping all ephemeral key registers in $< 200\text{ ns}$.

@@ -18,6 +18,13 @@ Where:
 * $y$: Convenience yield of holding uncommitted immediate capacity.
 * $\text{Multiplier}_{\text{SLA}}$: 0.85 (Best-effort), 1.00 (Fault-tolerant), 1.35 (Mission-critical).
 
+#### The Compute Basis Spread Equation:
+The spread between forward clearance and spot retail execution encapsulates time value and preemption risk:
+
+$$\text{Basis}(t, T) = F(t, T) - S_t = S_t \cdot \left(\exp\left((r + c - y)(T - t)\right) - 1\right) + \Delta_{\text{preemption\_risk}}$$
+
+Where $\Delta_{\text{preemption\_risk}}$ compensates the buyer for hosting volatility on secondary markets without hardware SLA guarantees.
+
 ```python
 from apex_compute_futures.futures.forward_curve import ComputeForwardCurve
 

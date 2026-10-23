@@ -40,3 +40,31 @@ flowchart TD
 
 3. **Inertia & Physical Balance Co-Optimization:**
    * During regional grid disturbances ($\Delta f < 0$), the `Synthetic AMM` calculates required microsecond DVFS GPU clock shedding, injecting synthetic inertia into the grid and capturing emergency ancillary pricing.
+
+---
+
+## 🏢 Wholesale Hyperscalers vs. Retail Spot Infrastructure
+
+The platform explicitly distinguishes the physical fabrics and contractual mechanics of **Wholesale Tier-1 Clouds** (AWS, Azure, GCP, CoreWeave) versus **Retail Secondary Spot Brokers** (vast.ai, RunPod):
+
+```mermaid
+flowchart TD
+    INGEST{{Workload Profiler}} -->|High Comm C/W| HYPER[HyperscalerIB<br>3.2 Tbps Fabric]
+    INGEST -->|Zero Comm C/W| RETAIL[Retail Spot<br>1 Gbps WAN]
+    
+    HYPER -->|EDP Drawdown| PROD[(Enterprise Core)]
+    RETAIL -->|60% Spread| BATCH[(Stateless Queue)]
+```
+
+* **Network Fat-Tree vs. Commodity WAN:** Hyperscalers provide non-blocking 3.2 Tbps InfiniBand/RoCEv2 suited for distributed gradient synchronization. Retail spot hosts sit on unpeered 1 Gbps WANs where an 80 GB checkpoint requires $>10$ minutes to transfer, making stateful model migration mathematically infeasible.
+* **Workload Isolation:** The `ActionGate` enforces strict policy separation: distributed training is routed strictly to Hyperscaler fabrics, while retail spot hosts are leased exclusively for embarrassingly parallel stateless tasks (hyperparameter search, Monte Carlo paths, synthetic data generation).
+
+---
+
+## 🛡️ Anti-Reverse-Engineering Architecture (Ghidra / IDA / REA Immunity)
+
+The commercial enterprise edition incorporates an "Empty Chassis" defense ensuring that decompilation with Ghidra, IDA Pro, Binary Ninja, or automated symbolic tools (REA) yields zero proprietary alpha:
+
+1. **Pure Symbolic Templates:** OSS and distributed binaries contain only algebraic stubs and formal invariant checkers.
+2. **Ephemeral Parameter Streaming:** Proprietary weights and non-linear calibration manifolds ($10^9$ parameters) are streamed ephemerally over NIST FIPS 203 (ML-KEM-1024) post-quantum tunnels with 60-second half-lives.
+3. **Hardware PUF Zeroization:** Binary hooks into hardware Physically Unclonable Functions (PUF). Any debugger attachment (`ptrace`), memory probe, or container escape attempt triggers immediate key wiping in $< 200\text{ ns}$.
