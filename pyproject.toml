@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apex-compute-energy-futures"
+version = "0.1.0"
+description = "Sovereign Compute-Energy Futures, Predictive Machine Learning & Real-Time Microsecond Arbitrage Engine for AI Data Centers"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Apex Growth Systems LLC", email = "sales@a2zsoc.com"}
+]
+keywords = [
+    "datacenter",
+    "compute-futures",
+    "energy-arbitrage",
+    "predictive-modeling",
+    "fractional-differentiation",
+    "triple-barrier",
+    "synthetic-inertia",
+    "amm",
+    "action-gate",
+    "deflated-sharpe-ratio"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.scripts]
+apex-futures = "apex_compute_futures.cli:main"
