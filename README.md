@@ -38,34 +38,15 @@ Traditional monolithic machine learning models fail when trying to couple semico
 
 ```mermaid
 flowchart TD
-    subgraph Tier3 ["Tier 3: Macro-Horizon Predictive Engine (30 - 90 Days)"]
-        T3_DATA["Observable Proxy Data<br/>FERC Interconnection Queues • Semi Book-to-Bill<br/>Hyperscaler CapEx Amortization • TSMC 10-K Filings"]
-        T3_MODEL["Bayesian Structural Vector Error Correction (SVEC)<br/>Horseshoe Shrinkage Priors"]
-        T3_OUTPUT["Macro Structural Regime Prior P(Regime | Theta)"]
-        T3_DATA --> T3_MODEL --> T3_OUTPUT
-    end
-
-    subgraph Tier2 ["Tier 2: Meso-Horizon Yield & Forward Curve Engine (1 - 24 Hours)"]
-        T2_DATA["Locational Marginal Electricity Pricing (ERCOT/PJM LMP)<br/>Natural Gas Futures (Henry Hub) • Facility PUE & Heat Plumes"]
-        T2_MODEL["Continuous Cost-of-Carry Forward Curve Engine<br/>F(t, T) = S_t * exp((r + c - y) * (T - t))<br/>A-ECMM Invariant Solver: Phi(E, C, f) = K"]
-        T2_OUTPUT["Forward Compute Arbitrage Clearance Matrix P_clear(r, t)"]
-        T3_OUTPUT -->|"Bi-Weekly Bayesian Update"| T2_MODEL
-        T2_DATA --> T2_MODEL --> T2_OUTPUT
-    end
-
-    subgraph Tier1 ["Tier 1: Micro-Horizon Real-Time Execution Core (<10 µs)"]
-        T1_DATA["L3 Order Books & Spot Ticks (vast.ai, RunPod)<br/>eBPF Host Telemetry (Ping, Packet Loss, Jitter Cache)"]
-        T1_GATE["Deterministic Fast-Path ActionGate<br/>P_spot < P_clear AND Host in HealthySet"]
-        T1_EXEC["High-Throughput Matching & Liquidation Engine<br/>Almgren-Chriss Hyperbolic Trajectory • DVFS Shedding"]
-        T2_OUTPUT -->|"Pushed Hourly to Shared Memory"| T1_GATE
-        T1_DATA --> T1_GATE -->|"Approved (<10 µs)"| T1_EXEC
-    end
-
-    subgraph OutOfBand ["Asynchronous Verification & Audit Ledger"]
-        Z3["FormalSettlementGuard (SMT/Z3 Invariants)"]
-        AUDIT["Immutable SHA-256 Evidence Vault"]
-        T1_EXEC -.->|"Post-Trade Stream"| Z3 --> AUDIT
-    end
+    EXT_FEEDS{{"Commodity & Spot Feeds<br>(ERCOT LMP • vast.ai)"}} -->|Raw Ticks| PRED["Predictive Core<br>(Fractional Diff d*)"]
+    PRED -->|Stationary d*| CURVE["Forward Yield Curve<br>(Cost of Carry F(t,T))"]
+    CURVE -->|Clearance Map| GATE["Fast ActionGate<br>(Risk & SMT Bounds)"]
+    
+    HEALTH["Host Telemetry Pool<br>(eBPF Probe Cache)"] -->|Health OK| GATE
+    GATE -->|Pass < 10us| EXEC["Arbitrage Dispatch<br>(Almgren-Chriss)"]
+    
+    EXEC -->|Under-Freq| AMM["Synthetic AMM<br>(DVFS Shedding)"]
+    EXEC -.->|Post-Trade| AUDIT[("Evidence Vault<br>(SHA-256 Hash)")]
 ```
 
 ---
